@@ -21,7 +21,10 @@ class PotionInventory(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     """ """
+    #version 1
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
 
     return "OK"
 
@@ -30,6 +33,10 @@ def get_bottle_plan():
     """
     Go from barrel to bottle.
     """
+
+    #version 1
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
 
     # Each bottle has a quantity of what proportion of red, blue, and
     # green potion to add.
