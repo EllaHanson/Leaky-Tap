@@ -58,8 +58,10 @@ def search_orders(
     """
 
     #version 1
+    """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
+    """
 
     return {
         "previous": "",
@@ -88,8 +90,10 @@ def post_visits(visit_id: int, customers: list[Customer]):
     """
     print(customers)
 
+    """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
+    """
 
     return "OK"
 
@@ -98,8 +102,10 @@ def post_visits(visit_id: int, customers: list[Customer]):
 def create_cart(new_cart: Customer):
     """ """
     #version 1
+    """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
+    """
         
     return {"cart_id": 1}
 
@@ -113,8 +119,10 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
 
     #version 1
+    """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
+    """
         
     return "OK"
 
@@ -127,7 +135,9 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
 
     #version 1
+    """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
+    """
     
     return {"total_potions_bought": 1, "total_gold_paid": 50}

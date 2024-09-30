@@ -15,8 +15,10 @@ def get_catalog():
     """
 
     #version 1
+    """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
+    """
 
     return [
             {
