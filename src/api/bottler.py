@@ -57,7 +57,7 @@ def get_bottle_plan():
                 }
             ]
     else:
-        return [{}] # return empty array for no bottling (??) i think
+        return [] # return empty array for no bottling (??) i think
 
 if __name__ == "__main__":
     print(get_bottle_plan())
