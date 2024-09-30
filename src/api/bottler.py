@@ -41,7 +41,7 @@ def get_bottle_plan():
 
     #version 1
     with db.engine.begin() as connection:
-        green_ml = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory"))
+        green_ml = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory"))
 
     # Each bottle has a quantity of what proportion of red, blue, and
     # green potion to add.
