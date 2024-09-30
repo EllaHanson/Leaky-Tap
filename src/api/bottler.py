@@ -57,12 +57,7 @@ def get_bottle_plan():
                 }
             ]
     else:
-        return [
-                {
-                    "potion_type": [0, 0, 0, 0],
-                    "quantity": 0,
-                }
-            ]
+        return [{}] # return empty array for no bottling (??) i think
 
 if __name__ == "__main__":
     print(get_bottle_plan())
