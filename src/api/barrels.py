@@ -49,9 +49,12 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         green_ml = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory")).scalar()
         gold_num = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).scalar()
 
+        if green_potions is None: green_potions = 0
+        if green_ml is None: green_ml = 0
+        if gold_num is None: gold_num = 0
+
     if green_potions < 10 and gold_num >= 100:
-        return [{"sku": "SMALL_GREEN_BARREL",
-                  "quantity": "1" }]
+        return [{"sku": "SMALL_GREEN_BARREL","quantity": 1 }]
     else:
         return []
 
