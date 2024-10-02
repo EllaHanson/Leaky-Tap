@@ -41,12 +41,14 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
-    print("here plz")
 
+    return [{"sku:": "SMALL_GREEN_BARREL", "quantity": 1}]
+
+"""
     in_stock = 0
     for x in wholesale_catalog:
         if x.sku == "SMALL_GREEN_BARREL":
-            in_stock = 1
+            in_stock += 1
 
     #setting up prompt to get for how many green potion my shop has
     
@@ -59,8 +61,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         if green_ml is None: green_ml = 0
         if gold_num is None: gold_num = 0
 
-    if in_stock == 1 and green_potions < 10 and gold_num >= 100:
+    if in_stock >= 1 and green_potions < 10 and gold_num >= 100:
         return [{"sku": "SMALL_GREEN_BARREL","quantity": 1 }]
     else:
         return []
+"""
 
