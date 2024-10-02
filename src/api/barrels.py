@@ -42,9 +42,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
 
-    return [{"sku:": "SMALL_GREEN_BARREL", "quantity": 1}]
+    #return [{"sku:": "SMALL_GREEN_BARREL", "quantity": 1}]
 
-"""
     in_stock = 0
     for x in wholesale_catalog:
         if x.sku == "SMALL_GREEN_BARREL":
@@ -65,5 +64,4 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         return [{"sku": "SMALL_GREEN_BARREL","quantity": 1 }]
     else:
         return []
-"""
 
