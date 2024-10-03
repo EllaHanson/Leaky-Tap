@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from src.api import auth
+from . import auth
 
 #added for version 1
 import sqlalchemy
