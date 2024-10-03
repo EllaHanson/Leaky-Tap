@@ -26,15 +26,16 @@ class Barrel(BaseModel):
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
-
+    return "OK"
+"""
     delivered_ml = len(barrels_delivered) * barrels_delivered[0].ml_per_barrel
     price = len(barrels_delivered) * barrels_delivered[0].price
 
     with db.engine.begin() as connection:
         update_ml = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_ml = (num_green_ml + {delivered_ml})"))
         update_gold = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold = (gold - {price})"))
-
-    return "OK"
+"""
+    #return "OK"
 
 # Gets called once a day
 @router.post("/plan")
@@ -42,8 +43,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
 
-    #return [{"sku:": "SMALL_GREEN_BARREL", "quantity": 1}]
+    return [{"sku:": "SMALL_GREEN_BARREL", "quantity": 1}]
 
+
+"""
     in_stock = 0
     for x in wholesale_catalog:
         if x.sku == "SMALL_GREEN_BARREL":
@@ -64,4 +67,5 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         return [{"sku": "SMALL_GREEN_BARREL","quantity": 1 }]
     else:
         return []
+"""
 
