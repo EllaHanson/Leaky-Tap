@@ -47,25 +47,36 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     with db.engine.begin() as connection:
         res_potions = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory")).fetchone()
-        green_potion = res_potions.num_green_potions
+        green_potions = res_potions.num_green_potions
         res_ml = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory")).fetchone()
         green_ml = res_ml.num_green_ml
+        res_gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()
+        gold_num = res_gold.gold
         
 
-    print(green_potion)
+    print(green_potions)
     print(green_ml)
-    
-    return ({"sku:": "SMALL_GREEN_BARREL", "quantity": 1})
-    
+    print(gold_num)
 
-    """
+    #return ({"sku:": "SMALL_GREEN_BARREL", "quantity": 1})
+    
     in_stock = 0
     for x in wholesale_catalog:
         if x.sku == "SMALL_GREEN_BARREL":
             in_stock += 1
+
+    print(in_stock)
     
     #return [{"sku:": "SMALL_RED_BARREL", "quantity": 1}]
+    if (in_stock >= 1) and (green_potions < 10) and (gold_num >= 100):
+        return [{"sku": "SMALL_GREEN_BARREL","quantity": 1 }]
+    else:
+        return[]
+    
 
+
+
+    """
     #setting up prompt to get for how many green potion my shop has
     with db.engine.begin() as connection:
         green_potions = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory")).scalar
