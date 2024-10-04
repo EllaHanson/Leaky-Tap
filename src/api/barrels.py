@@ -50,6 +50,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         green_potion = res.fetchone[0]
 
     print(green_potion)
+    return ({"sku:": "SMALL_GREEN_BARREL", "quantity": 1})
     
 
     """
