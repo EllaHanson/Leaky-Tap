@@ -43,6 +43,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
 
+    """
     in_stock = 0
     for x in wholesale_catalog:
         if x.sku == "SMALL_GREEN_BARREL":
@@ -56,9 +57,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         green_ml = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory")).scalar
         gold_num = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).scalar
 
-    if in_stock >= 1 and green_potions < 10 and gold_num >= 100:
+    if (in_stock >= 1) and (green_potions < 10) and (gold_num >= 100):
         return [{"sku": "SMALL_GREEN_BARREL","quantity": 1 }]
     else:
         return []
+    """
     
     
