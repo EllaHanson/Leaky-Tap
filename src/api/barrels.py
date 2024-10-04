@@ -46,8 +46,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print(wholesale_catalog)
 
     with db.engine.begin() as connection:
-        res = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory"))
-        green_potion = res.fetchone()[0]
+        res = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory")).fetchone()
+        green_potion = res
 
     print(green_potion)
     return ({"sku:": "SMALL_GREEN_BARREL", "quantity": 1})
