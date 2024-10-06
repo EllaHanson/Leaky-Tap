@@ -89,12 +89,6 @@ def post_visits(visit_id: int, customers: list[Customer]):
     Which customers visited the shop today?
     """
     print(customers)
-
-    """
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
-    """
-
     return "OK"
 
 

@@ -57,7 +57,7 @@ def get_bottle_plan():
 
     if green_ml >= 100 and green_potion <= 10:
         potion_num = green_ml / 100
-        return [{ "potion_type": [0, 100, 0, 0], "quantity": potion_num }]
+        return [{ "potion_type": [0, 100, 0, 0], "quantity": int(potion_num) }]
     else:
         return [] # return empty array for no bottling (??) i think
 
