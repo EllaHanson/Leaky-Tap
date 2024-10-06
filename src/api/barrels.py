@@ -28,16 +28,24 @@ class Barrel(BaseModel):
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
-    return "OK"
-"""
-    delivered_ml = len(barrels_delivered) * barrels_delivered[0].ml_per_barrel
-    price = len(barrels_delivered) * barrels_delivered[0].price
+    price = 0
+    delivered_ml = 0
+
+    for n in barrels_delivered:
+        price += (n.price * n.quantity)
+        delivered_ml += (n.ml_per_barrel * n.quantity)
+
+    print(delivered_ml)
 
     with db.engine.begin() as connection:
-        update_ml = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_ml = (num_green_ml + {delivered_ml})"))
-        update_gold = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold = (gold - {price})"))
-"""
-    #return "OK"
+        connection.execute(sqlalchemy.text(f"UPDATE global_inventory set num_green_ml = num_green_ml + {delivered_ml}"))
+        connection.execute(sqlalchemy.text(f"UPDATE global_inventory set gold = gold - {price}"))
+
+        #connection.execute(sqlalchemy.text(f"UPDATE global_inventory set num_green_ml = 0"))
+        #connection.execute(sqlalchemy.text(f"UPDATE global_inventory set gold = 100"))
+
+    return "OK"
+
 
 # Gets called once a day
 @router.post("/plan")
@@ -52,28 +60,16 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         green_ml = res_ml.num_green_ml
         res_gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()
         gold_num = res_gold.gold
-        
-
-    print(green_potions)
-    print(green_ml)
-    print(gold_num)
-
-    #return ({"sku:": "SMALL_GREEN_BARREL", "quantity": 1})
     
     in_stock = 0
     for x in wholesale_catalog:
         if x.sku == "SMALL_GREEN_BARREL":
             in_stock += 1
-
-    print(in_stock)
     
-    #return [{"sku:": "SMALL_RED_BARREL", "quantity": 1}]
     if (in_stock >= 1) and (green_potions < 10) and (gold_num >= 100):
         return [{"sku": "SMALL_GREEN_BARREL","quantity": 1 }]
     else:
         return[]
-    
-
 
 
     """
