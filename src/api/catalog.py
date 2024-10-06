@@ -21,5 +21,5 @@ def get_catalog():
     
 
     return [
-            {"sku": "GREEN_POTION", "name": "green potion", "quantity": green_potions, "price": 50, "potion_type": [0, 100, 0, 0],}
+            {"sku": "GREEN_POTION", "name": "green potion", "quantity": green_potions, "price": 50, "potion_type": [0, 100, 0, 0]}
         ]

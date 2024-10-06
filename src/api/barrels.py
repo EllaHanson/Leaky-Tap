@@ -54,10 +54,74 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print(wholesale_catalog)
 
     with db.engine.begin() as connection:
-        res_potions = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory")).fetchone()
-        green_potions = res_potions.num_green_potions
-        res_ml = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory")).fetchone()
-        green_ml = res_ml.num_green_ml
+        #green potion info
+        result_green_potions = connection.execute(sqlalchemy.text("SELECT amount FROM potions WHERE color = 'green'")).fetchone()
+        green_potions = result_green_potions.amount
+        result_green_ml = connection.execute(sqlalchemy.text("SELECT amount FROM ml WHERE color = 'green'")).fetchone()
+        green_ml = result_green_ml.amount
+        #red potion info
+        result_red_potions = connection.execute(sqlalchemy.text("SELECT amount FROM potions WHERE color = 'red'")).fetchone()
+        red_potions = result_red_potions.amount
+        result_red_ml = connection.execute(sqlalchemy.text("SELECT amount FROM ml WHERE color = 'red'")).fetchone()
+        red_ml = result_red_ml.amount
+        #blue potion info
+        result_blue_potions = connection.execute(sqlalchemy.text("SELECT amount FROM potions WHERE color = 'blue'")).fetchone()
+        blue_potions = result_blue_potions.amount
+        result_blue_ml = connection.execute(sqlalchemy.text("SELECT amount FROM ml WHERE color = 'blue'")).fetchone()
+        blue_ml = result_blue_ml.amount
+        #gold info
+        res_gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()
+        gold = res_gold.gold
+
+        if gold < 100:
+            return[]
+    
+        if green_potions <= 10 and green_ml < 100:
+            in_stock = 0
+            for x in wholesale_catalog:
+                if x.sku == "SMALL_GREEN_BARREL":
+                    in_stock += 1  
+
+            if (in_stock) and (gold >= 100):
+                return [{"sku": "SMALL_GREEN_BARREL","quantity": 1 }]
+            
+        elif red_potions <= 10 and red_ml < 100:
+            in_stock = 0
+            for x in wholesale_catalog:
+                if x.sku == "SMALL_RED_BARREL":
+                    in_stock += 1  
+
+            if (in_stock) and (gold >= 100):
+                return [{"sku": "SMALL_RED_BARREL","quantity": 1 }]
+        elif blue_potions <= 10 and blue_ml < 100:
+            in_stock = 0
+            for x in wholesale_catalog:
+                if x.sku == "SMALL_BLUE_BARREL":
+                    in_stock += 1  
+
+            if (in_stock) and (gold >= 100):
+                return [{"sku": "SMALL_BLUE_BARREL","quantity": 1 }]
+        
+        return[]
+
+
+
+
+"""
+        #red potion
+        result_red_potions = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM global_inventory")).fetchone()
+        red_potions = result_red_potions.num_red_potions
+        result_red_ml = connection.execute(sqlalchemy.text("SELECT num_red_ml FROM global_inventory")).fetchone()
+        red_ml = result_red_ml.num_red_ml
+
+        #blue potion
+        result_blue_potions = connection.execute(sqlalchemy.text("SELECT num_blue_potions FROM global_inventory")).fetchone()
+        blue_potions = result_blue_potions.num_blue_potions
+        result_blue_ml = connection.execute(sqlalchemy.text("SELECT num_blue_ml FROM global_inventory")).fetchone()
+        blue_ml = result_blue_ml.num_blue_ml
+
+
+
         res_gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()
         gold_num = res_gold.gold
     
@@ -72,7 +136,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         return[]
 
 
-    """
+    
     #setting up prompt to get for how many green potion my shop has
     with db.engine.begin() as connection:
         green_potions = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory")).scalar
@@ -83,6 +147,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         return [{"sku": "SMALL_GREEN_BARREL","quantity": 1 }]
     else:
         return []
-    """
+"""
+    
     
     
