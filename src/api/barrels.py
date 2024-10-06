@@ -28,21 +28,28 @@ class Barrel(BaseModel):
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
+
     price = 0
-    delivered_ml = 0
+    red_ml = 0
+    green_ml = 0
+    blue_ml = 0
 
     for n in barrels_delivered:
         price += (n.price * n.quantity)
-        delivered_ml += (n.ml_per_barrel * n.quantity)
-
-    print(delivered_ml)
+        if n.sku.find("RED") != -1:
+            red_ml += (n.ml_per_barrel) * (n.quantity)
+        elif n.sku.find("GREEN") != -1:
+            green_ml += (n.ml_per_barrel) * (n.quantity)
+        elif n.sku.find("BLUE") != -1:
+            blue_ml += (n.ml_per_barrel) * (n.quantity)
+        else:
+            print("error, idk what color barrel, thats not an option")
 
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text(f"UPDATE global_inventory set num_green_ml = num_green_ml + {delivered_ml}"))
+        connection.execute(sqlalchemy.text(f"UPDATE ml set amount = amount + {red_ml} WHERE color = 'red'"))
+        connection.execute(sqlalchemy.text(f"UPDATE ml set amount = amount + {green_ml} WHERE color = 'green'"))
+        connection.execute(sqlalchemy.text(f"UPDATE ml set amount = amount + {blue_ml} WHERE color = 'blue'"))
         connection.execute(sqlalchemy.text(f"UPDATE global_inventory set gold = gold - {price}"))
-
-        #connection.execute(sqlalchemy.text(f"UPDATE global_inventory set num_green_ml = 0"))
-        #connection.execute(sqlalchemy.text(f"UPDATE global_inventory set gold = 100"))
 
     return "OK"
 
@@ -104,50 +111,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         
         return[]
 
-
-
-
-"""
-        #red potion
-        result_red_potions = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM global_inventory")).fetchone()
-        red_potions = result_red_potions.num_red_potions
-        result_red_ml = connection.execute(sqlalchemy.text("SELECT num_red_ml FROM global_inventory")).fetchone()
-        red_ml = result_red_ml.num_red_ml
-
-        #blue potion
-        result_blue_potions = connection.execute(sqlalchemy.text("SELECT num_blue_potions FROM global_inventory")).fetchone()
-        blue_potions = result_blue_potions.num_blue_potions
-        result_blue_ml = connection.execute(sqlalchemy.text("SELECT num_blue_ml FROM global_inventory")).fetchone()
-        blue_ml = result_blue_ml.num_blue_ml
-
-
-
-        res_gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()
-        gold_num = res_gold.gold
-    
-    in_stock = 0
-    for x in wholesale_catalog:
-        if x.sku == "SMALL_GREEN_BARREL":
-            in_stock += 1
-    
-    if (in_stock >= 1) and (green_potions < 10) and (gold_num >= 100):
-        return [{"sku": "SMALL_GREEN_BARREL","quantity": 1 }]
-    else:
-        return[]
-
-
-    
-    #setting up prompt to get for how many green potion my shop has
-    with db.engine.begin() as connection:
-        green_potions = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory")).scalar
-        green_ml = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory")).scalar
-        gold_num = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).scalar
-
-    if (in_stock >= 1) and (green_potions < 10) and (gold_num >= 100):
-        return [{"sku": "SMALL_GREEN_BARREL","quantity": 1 }]
-    else:
-        return []
-"""
     
     
     
