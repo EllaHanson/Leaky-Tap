@@ -123,7 +123,17 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
+    color = "green" #if you dont tell me your getting green
+    if item_sku == "RED_POTION":
+        color = "red"
+    elif item_sku == "GREEN_POTION":
+        color = "green"
+    elif item_sku == "BLUE_POTION":
+        color = "blue"
 
+
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text(f"UPDATE carts SET {color}_potion = {cart_item.quantity} WHERE cart_id = {cart_id}"))
         
     return "OK"
 
@@ -133,11 +143,26 @@ class CartCheckout(BaseModel):
 
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
+    print("--checkout--")
     """ """
-    
+
+    with db.engine.begin() as connection:
+        result_red_potions_sold = connection.execute(sqlalchemy.text(f"SELECT red_potion from carts where cart_id = {cart_id}")).fetchone()
+        red_potions_sold = result_red_potions_sold.red_potion
+        result_green_potions_sold = connection.execute(sqlalchemy.text(f"SELECT green_potion from carts where cart_id = {cart_id}")).fetchone()
+        green_potions_sold = result_green_potions_sold.green_potion
+        result_blue_potions_sold = connection.execute(sqlalchemy.text(f"SELECT blue_potion from carts where cart_id = {cart_id}")).fetchone()
+        blue_potions_sold = result_blue_potions_sold.blue_potion
+
+        balance = (red_potions_sold * 50) + (green_potions_sold * 50) + (blue_potions_sold * 50)
+        total_potions = red_potions_sold + green_potions_sold + blue_potions_sold
+        print(f"checkout: balance = {balance}, payment = {cart_checkout.payment}")
+        connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold = gold + {balance}"))
+
+        connection.execute(sqlalchemy.text(f"UPDATE potions SET amount = amount - {red_potions_sold} WHERE color = 'red'"))
+        connection.execute(sqlalchemy.text(f"UPDATE potions SET amount = amount - {green_potions_sold} WHERE color = 'green'"))
+        connection.execute(sqlalchemy.text(f"UPDATE potions SET amount = amount - {blue_potions_sold} WHERE color = 'blue'"))
 
 
 
-
-
-    return {"total_potions_bought": 1, "total_gold_paid": 50}
+    return {"total_potions_bought": total_potions, "total_gold_paid": balance}
