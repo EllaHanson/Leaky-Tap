@@ -57,12 +57,6 @@ def search_orders(
     time is 5 total line items.
     """
 
-    #version 1
-    """
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
-    """
-
     return {
         "previous": "",
         "next": "",
@@ -89,6 +83,20 @@ def post_visits(visit_id: int, customers: list[Customer]):
     Which customers visited the shop today?
     """
     print(customers)
+
+    
+    with db.engine.begin() as connection:
+        for n in customers:
+            #check if this customer has been here before
+            result_prev_customer = connection.execute(sqlalchemy.text(f"SELECT COUNT(*) FROM customers WHERE name = '{n.customer_name}'")).fetchone()
+            is_prev_customer = result_prev_customer.count
+
+            if is_prev_customer:
+                print(f"{n.customer_name} already in customer table")
+            else:
+                print(f"adding {n.customer_name} to customer table...")
+                connection.execute(sqlalchemy.text(f"INSERT INTO customers (name,class,level) VALUES ('{n.customer_name}','{n.character_class}',{n.level})" ))
+                
     return "OK"
 
 
@@ -96,12 +104,16 @@ def post_visits(visit_id: int, customers: list[Customer]):
 def create_cart(new_cart: Customer):
     """ """
     #version 1
-    """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
-    """
+        customer_name = new_cart.customer_name
+        result_customer = connection.execute(sqlalchemy.text(f"SELECT customer_id FROM customers WHERE name = '{customer_name}'")).fetchone()
+        temp_customer_id = result_customer.customer_id
+
+        connection.execute(sqlalchemy.text(f"INSERT INTO carts (customer_id) VALUES ({temp_customer_id})" ))
+        result_temp_id = connection.execute(sqlalchemy.text(f"SELECT cart_id FROM carts WHERE customer_id = '{temp_customer_id}'")).fetchone()
+        temp_cart_id = result_temp_id.cart_id
         
-    return {"cart_id": 1}
+    return {"cart_id": temp_cart_id}
 
 
 class CartItem(BaseModel):
@@ -112,11 +124,6 @@ class CartItem(BaseModel):
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
 
-    #version 1
-    """
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
-    """
         
     return "OK"
 
@@ -127,11 +134,10 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
-
-    #version 1
-    """
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
-    """
     
+
+
+
+
+
     return {"total_potions_bought": 1, "total_gold_paid": 50}

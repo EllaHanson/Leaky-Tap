@@ -24,15 +24,32 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     #version 1
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
     
-    used_ml = 0
-    potions_made = 0
+    red_ml = 0
+    green_ml = 0
+    blue_ml = 0
+
     for n in potions_delivered:
-        used_ml += (n.quantity * 100)
-        potions_made += n.quantity
+        red_ml += (n.potion_type[0] * n.quantity)
+        green_ml += (n.potion_type[1] * n.quantity)
+        blue_ml += (n.potion_type[2] * n.quantity)
+
+    print(red_ml)
+    print(green_ml)
+    print(blue_ml)
+
+    red_potions = int(red_ml/100)
+    green_potions = int(green_ml/100)
+    blue_potions = int(blue_ml/100)
     
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_ml = (num_green_ml - {used_ml})"))
-        connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_potions = (num_green_potions + {potions_made})"))
+        connection.execute(sqlalchemy.text(f"UPDATE ml SET amount = (amount - {red_ml}) WHERE color = 'red'"))
+        connection.execute(sqlalchemy.text(f"UPDATE potions SET amount = (amount + {red_potions}) WHERE color = 'red'"))
+
+        connection.execute(sqlalchemy.text(f"UPDATE ml SET amount = (amount - {green_ml}) WHERE color = 'green'"))
+        connection.execute(sqlalchemy.text(f"UPDATE potions SET amount = (amount + {green_potions}) WHERE color = 'green'"))
+
+        connection.execute(sqlalchemy.text(f"UPDATE ml SET amount = (amount - {blue_ml}) WHERE color = 'blue'"))
+        connection.execute(sqlalchemy.text(f"UPDATE potions SET amount = (amount + {blue_potions}) WHERE color = 'blue'"))
 
     return "OK"
 
