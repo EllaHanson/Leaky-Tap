@@ -79,9 +79,8 @@ class Customer(BaseModel):
 
 @router.post("/visits/{visit_id}")
 def post_visits(visit_id: int, customers: list[Customer]):
-    """
-    Which customers visited the shop today?
-    """
+    
+    print("Which customers visited the shop today?")
     print(customers)
 
     
