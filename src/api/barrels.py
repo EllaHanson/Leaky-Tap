@@ -50,7 +50,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         connection.execute(sqlalchemy.text(f"UPDATE ml SET amount = amount + {red_ml} WHERE color = 'red'"))
         connection.execute(sqlalchemy.text(f"UPDATE ml SET amount = amount + {green_ml} WHERE color = 'green'"))
         connection.execute(sqlalchemy.text(f"UPDATE ml SET amount = amount + {blue_ml} WHERE color = 'blue'"))
-        connection.execute(sqlalchemy.text(f"UPDATE global_inventory set gold = gold - {price}"))
+        connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold = gold - {price} WHERE id = 1"))
 
     return "OK"
 
@@ -81,6 +81,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         #gold info
         res_gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()
         gold = res_gold.gold
+        
+        print("Current gold:")
+        print(gold)
 
         if gold < 100:
             return[]
