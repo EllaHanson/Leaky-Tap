@@ -86,15 +86,18 @@ def get_bottle_plan():
 
     if red_ml >= 100 and red_potions <= 10:
         red_potion_num = red_ml / 100
+        print(f"bottling {red_potion_num} red potions")
         return_list.append({"potion_type": [100,0,0,0], "quantity": int(red_potion_num)})
         print(return_list)
 
     if green_ml >= 100 and green_potions <= 10:
         green_potion_num = green_ml / 100
+        print(f"bottling {green_potion_num} green potions")
         return_list.append({"potion_type": [0,100,0,0], "quantity": int(green_potion_num)})
         
     if blue_ml >= 100 and blue_potions <= 10:
         blue_potion_num = blue_ml / 100
+        print(f"bottling {blue_potion_num} blue potions")
         return_list.append({"potion_type": [0,0,100,0], "quantity": int(blue_potion_num)})
 
     

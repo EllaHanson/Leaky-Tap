@@ -108,9 +108,12 @@ def create_cart(new_cart: Customer):
         result_customer = connection.execute(sqlalchemy.text(f"SELECT customer_id FROM customers WHERE name = '{customer_name}'")).fetchone()
         temp_customer_id = result_customer.customer_id
 
+        print(f"creating cart for {customer_name}...")
+
         connection.execute(sqlalchemy.text(f"INSERT INTO carts (customer_id) VALUES ({temp_customer_id})" ))
         result_temp_id = connection.execute(sqlalchemy.text(f"SELECT cart_id FROM carts WHERE customer_id = '{temp_customer_id}'")).fetchone()
         temp_cart_id = result_temp_id.cart_id
+        print(f"cart id: {temp_cart_id}")
         
     return {"cart_id": temp_cart_id}
 
@@ -125,10 +128,13 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     color = "green" #if you dont tell me your getting green
     if item_sku == "RED_POTION":
         color = "red"
+        print(f"adding {cart_item.quantity} red potions to cart {cart_id}")
     elif item_sku == "GREEN_POTION":
         color = "green"
+        print(f"adding {cart_item.quantity} green potions to cart {cart_id}")
     elif item_sku == "BLUE_POTION":
         color = "blue"
+        print(f"adding {cart_item.quantity} blue potions to cart {cart_id}")
 
 
     with db.engine.begin() as connection:
@@ -155,7 +161,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
         balance = (red_potions_sold * 50) + (green_potions_sold * 50) + (blue_potions_sold * 50)
         total_potions = red_potions_sold + green_potions_sold + blue_potions_sold
-        print(f"checkout: balance = {balance}, payment = {cart_checkout.payment}")
+        print(f"checkout for cart {cart_id}: balance = {balance}, payment = {cart_checkout.payment}")
         connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold = gold + {balance}"))
 
         connection.execute(sqlalchemy.text(f"UPDATE potions SET amount = amount - {red_potions_sold} WHERE color = 'red'"))
