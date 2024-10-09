@@ -65,29 +65,26 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         print(n)
 
     with db.engine.begin() as connection:
+        potion_list = connection.execute(sqlalchemy.text("SELECT amount FROM potions")).scalars().all()
+        ml_list = connection.execute(sqlalchemy.text("SELECT amount FROM ml")).scalars().all()
+
         #red potion info
-        result_red_potions = connection.execute(sqlalchemy.text("SELECT amount FROM potions WHERE color = 'red'")).fetchone()
-        red_potions = result_red_potions.amount
-        result_red_ml = connection.execute(sqlalchemy.text("SELECT amount FROM ml WHERE color = 'red'")).fetchone()
-        red_ml = result_red_ml.amount
+        red_potions = potion_list[0]
+        red_ml = ml_list[0]
         #green potion info
-        result_green_potions = connection.execute(sqlalchemy.text("SELECT amount FROM potions WHERE color = 'green'")).fetchone()
-        green_potions = result_green_potions.amount
-        result_green_ml = connection.execute(sqlalchemy.text("SELECT amount FROM ml WHERE color = 'green'")).fetchone()
-        green_ml = result_green_ml.amount
+        green_potions = potion_list[1]
+        green_ml = ml_list[1]
         #blue potion info
-        result_blue_potions = connection.execute(sqlalchemy.text("SELECT amount FROM potions WHERE color = 'blue'")).fetchone()
-        blue_potions = result_blue_potions.amount
-        result_blue_ml = connection.execute(sqlalchemy.text("SELECT amount FROM ml WHERE color = 'blue'")).fetchone()
-        blue_ml = result_blue_ml.amount
+        blue_potions = potion_list[2]
+        blue_ml = ml_list[2]
         #gold info
         res_gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()
         gold = res_gold.gold
 
         print("current potions,ml count: ")
-        print(f"red: {red_potions}, {red_ml}")
-        print(f"green: {green_potions}, {green_ml}")
-        print(f"blue: {blue_potions}, {blue_ml}")
+        print(f"red: {potion_list[0]}, {ml_list[0]}")
+        print(f"green: {potion_list[1]}, {ml_list[1]}")
+        print(f"blue: {potion_list[2]}, {ml_list[2]}")
         
         print("Current gold:", gold)
 
