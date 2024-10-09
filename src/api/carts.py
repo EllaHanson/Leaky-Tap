@@ -102,7 +102,7 @@ def post_visits(visit_id: int, customers: list[Customer]):
 @router.post("/")
 def create_cart(new_cart: Customer):
     """ """
-    print(f"making new cart for ", new_cart.customer_name)
+    #print(f"making new cart for ", new_cart.customer_name)
     #version 1
     with db.engine.begin() as connection:
         customer_name = new_cart.customer_name
