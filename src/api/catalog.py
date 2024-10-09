@@ -26,7 +26,7 @@ def get_catalog():
 
         return_list = []
         if (red_potions):
-            return_list.append({"sku": "RED_POTION", "name": "red potion", "quantity": red_potions, "price": 50, "potion_type": [0, 100, 0, 0]})
+            return_list.append({"sku": "RED_POTION", "name": "red potion", "quantity": red_potions, "price": 50, "potion_type": [100, 0, 0, 0]})
         if (green_potions):
             return_list.append({"sku": "GREEN_POTION", "name": "green potion", "quantity": green_potions, "price": 50, "potion_type": [0, 100, 0, 0]})
         if (blue_potions):
