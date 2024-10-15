@@ -28,6 +28,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
 
     with db.engine.begin() as connection:
         result_potion_options = connection.execute(sqlalchemy.text("SELECT * FROM potion_option")).fetchall()
+        result_potion_amount = connection.execute(sqlalchemy.text("SELECT * FROM potion_amount")).fetchall()
         total_used_red = 0
         total_used_green = 0
         total_used_blue = 0
