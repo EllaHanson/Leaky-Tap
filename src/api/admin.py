@@ -25,7 +25,10 @@ def reset():
         connection.execute(sqlalchemy.text("DELETE from gold WHERE id != 1"))
         connection.execute(sqlalchemy.text("DELETE from gold_entry"))
         connection.execute(sqlalchemy.text("DELETE FROM customers"))
-        connection.execute(sqlalchemy.text("DELETE FROM carts")) 
+        connection.execute(sqlalchemy.text("DELETE FROM cart_log"))
+        connection.execute(sqlalchemy.text("DELETE FROM cart_entry"))
+
+
 
     return "OK"
 
