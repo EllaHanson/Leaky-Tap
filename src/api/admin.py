@@ -21,7 +21,7 @@ def reset():
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text("DELETE FROM ml_entry"))
         connection.execute(sqlalchemy.text("DELETE FROM ml_log WHERE id != 1"))
-        connection.execute(sqlalchemy.text("UPDATE potion_amount SET amount = 0"))
+        connection.execute(sqlalchemy.text("UPDATE potion_amount SET amount = 0")) 
         connection.execute(sqlalchemy.text("DELETE from gold WHERE id != 1"))
         connection.execute(sqlalchemy.text("DELETE from gold_entry"))
         connection.execute(sqlalchemy.text("DELETE FROM customers"))
