@@ -111,12 +111,10 @@ def create_cart(new_cart: Customer):
 
         print(f"creating cart for {customer_name}...")
 
-        connection.execute(sqlalchemy.text(f"INSERT INTO carts (customer_id) VALUES ({temp_customer_id})" ))
-        result_temp_id = connection.execute(sqlalchemy.text(f"SELECT cart_id FROM carts WHERE customer_id = '{temp_customer_id}'")).fetchone()
-        temp_cart_id = result_temp_id.cart_id
-        print(f"cart id: {temp_cart_id}")
+        cart_id = connection.execute(sqlalchemy.text(f"INSERT INTO cart_log (customer_id) VALUES ({temp_customer_id}) RETURNING cart_id")).fetchone()[0]
+        print(f"cart id: {cart_id}")
         
-    return {"cart_id": temp_cart_id}
+    return {"cart_id": cart_id}
 
 
 class CartItem(BaseModel):
@@ -125,21 +123,11 @@ class CartItem(BaseModel):
 
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
-    """ """
-    color = "green" #if you dont tell me your getting green
-    if item_sku == "RED_POTION":
-        color = "red"
-        print(f"adding {cart_item.quantity} red potions to cart {cart_id}")
-    elif item_sku == "GREEN_POTION":
-        color = "green"
-        print(f"adding {cart_item.quantity} green potions to cart {cart_id}")
-    elif item_sku == "BLUE_POTION":
-        color = "blue"
-        print(f"adding {cart_item.quantity} blue potions to cart {cart_id}")
-
 
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text(f"UPDATE carts SET {color}_potion = {cart_item.quantity} WHERE cart_id = {cart_id}"))
+        with db.engine.begin() as connection:
+           potion_id = connection.execute(sqlalchemy.text(f"SELECT id FROM potion_option WHERE sku = '{item_sku}'")).fetchone()[0]
+           connection.execute(sqlalchemy.text(f"INSERT INTO cart_entry (cart_id, potion_option_id, amount) VALUES ('{cart_id}', {potion_id}, {cart_item.quantity})"))
         
     return "OK"
 
@@ -153,22 +141,23 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
 
     with db.engine.begin() as connection:
-        result_red_potions_sold = connection.execute(sqlalchemy.text(f"SELECT red_potion from carts where cart_id = {cart_id}")).fetchone()
-        red_potions_sold = result_red_potions_sold.red_potion
-        result_green_potions_sold = connection.execute(sqlalchemy.text(f"SELECT green_potion from carts where cart_id = {cart_id}")).fetchone()
-        green_potions_sold = result_green_potions_sold.green_potion
-        result_blue_potions_sold = connection.execute(sqlalchemy.text(f"SELECT blue_potion from carts where cart_id = {cart_id}")).fetchone()
-        blue_potions_sold = result_blue_potions_sold.blue_potion
+        cart_entry = connection.execute(sqlalchemy.text(f"SELECT amount, potion_option_id from cart_entry WHERE cart_id = {cart_id}")).fetchall()
+        customer_id = connection.execute(sqlalchemy.text(f"SELECT customer_id FROM cart_log WHERE cart_id = {cart_id}")).fetchone()[0]
+        customer_name = connection.execute(sqlalchemy.text(f"SELECT name FROM customers WHERE customer_id = {customer_id}")).fetchone()[0]
+        balance = 0
+        total_potions = 0
 
-        balance = (red_potions_sold * 50) + (green_potions_sold * 50) + (blue_potions_sold * 50)
-        total_potions = red_potions_sold + green_potions_sold + blue_potions_sold
-        print(f"checkout for cart {cart_id}: balance = {balance}, payment = {cart_checkout.payment}")
-        connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold = gold + {balance}"))
-
-        connection.execute(sqlalchemy.text(f"UPDATE potions SET amount = amount - {red_potions_sold} WHERE color = 'red'"))
-        connection.execute(sqlalchemy.text(f"UPDATE potions SET amount = amount - {green_potions_sold} WHERE color = 'green'"))
-        connection.execute(sqlalchemy.text(f"UPDATE potions SET amount = amount - {blue_potions_sold} WHERE color = 'blue'"))
-
-
-
-    return {"total_potions_bought": total_potions, "total_gold_paid": balance}
+        print(f"{customer_name}'s recipt:")
+        for n in cart_entry:
+            amount = n[0]
+            potion_id = n[1]
+            potion_info = connection.execute(sqlalchemy.text(f"SELECT price,name from potion_option WHERE id = {potion_id}")).fetchone()
+            price = potion_info[0]
+            potion_name = potion_info[1]
+            balance += (price * amount)
+            total_potions += amount
+            print(f"-{potion_name} x {amount}")
+        connection.execute(sqlalchemy.text(f"UPDATE cart_log SET total_bought = {total_potions}, balance = {balance}"))
+        print("price: ", balance)
+        print("payment: ", cart_checkout.payment)
+        return {"total_potions_bought": total_potions, "total_gold_paid": balance}

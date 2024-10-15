@@ -22,36 +22,48 @@ class PotionInventory(BaseModel):
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     """ """
     #version 1
-    print(f"potions delievered: {potions_delivered} order_id: {order_id}")
-    
-    red_ml = 0
-    green_ml = 0
-    blue_ml = 0
-
+    print(f"potions delievered:")
     for n in potions_delivered:
-        red_ml += (n.potion_type[0] * n.quantity)
-        green_ml += (n.potion_type[1] * n.quantity)
-        blue_ml += (n.potion_type[2] * n.quantity)
+        print(n)
 
-    print(red_ml)
-    print(green_ml)
-    print(blue_ml)
-
-    red_potions = int(red_ml/100)
-    green_potions = int(green_ml/100)
-    blue_potions = int(blue_ml/100)
-    
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text(f"UPDATE ml SET amount = (amount - {red_ml}) WHERE color = 'red'"))
-        connection.execute(sqlalchemy.text(f"UPDATE potions SET amount = (amount + {red_potions}) WHERE color = 'red'"))
+        result_potion_options = connection.execute(sqlalchemy.text("SELECT * FROM potion_option")).fetchall()
+        total_used_red = 0
+        total_used_green = 0
+        total_used_blue = 0
+        total_used_dark = 0
+    
+        for n in result_potion_options:
+            #print(n)
+            temp_id = n[0]
+            sku = n[1]
+            name = n[2]
+            required_red = n[3]
+            required_green = n[4]
+            required_blue = n[5]
+            required_dark = n[6]
+            potion_option = [required_red, required_green, required_blue, required_dark]
+            #print(potion_option)
+            for x in potions_delivered:
+                bottled_potion = [x.potion_type[0], x.potion_type[1], x.potion_type[2], x.potion_type[3]]
+                if potion_option == bottled_potion:
+                    print("-adding", name)
+                    total_used_red += x.potion_type[0]
+                    total_used_green += x.potion_type[1]
+                    total_used_blue += x.potion_type[2]
+                    total_used_dark += x.potion_type[3]
+                    #print(potion_option)
+                    #print(bottled_potion)
+                    connection.execute(sqlalchemy.text(f"UPDATE potion_amount SET amount = (amount + {x.quantity}) WHERE type_id = {temp_id}"))
 
-        connection.execute(sqlalchemy.text(f"UPDATE ml SET amount = (amount - {green_ml}) WHERE color = 'green'"))
-        connection.execute(sqlalchemy.text(f"UPDATE potions SET amount = (amount + {green_potions}) WHERE color = 'green'"))
+        result_ml = connection.execute(sqlalchemy.text(f"SELECT * FROM ml_log ORDER BY id DESC LIMIT 1")).fetchone()
+        print("total used ml: ", total_used_red, total_used_green, total_used_blue, total_used_dark)
+        entry_id = connection.execute(sqlalchemy.text(f"INSERT INTO ml_entry (red_diff, green_diff, blue_diff, dark_diff) VALUES ({-total_used_red}, {-total_used_green}, {-total_used_blue}, {-total_used_dark}) RETURNING entry_id")).fetchone()
+        print("inserting ml entry...")
+        connection.execute(sqlalchemy.text(f"INSERT INTO ml_log (red, green, blue, dark, entry_id) VALUES ({result_ml[1]-total_used_red}, {result_ml[2]-total_used_green}, {result_ml[3]-total_used_blue}, {result_ml[4]-total_used_dark}, {entry_id[0]})"))
+        print("updating ml log...")
+        return "OK"
 
-        connection.execute(sqlalchemy.text(f"UPDATE ml SET amount = (amount - {blue_ml}) WHERE color = 'blue'"))
-        connection.execute(sqlalchemy.text(f"UPDATE potions SET amount = (amount + {blue_potions}) WHERE color = 'blue'"))
-
-    return "OK"
 
 @router.post("/plan")
 def get_bottle_plan():
@@ -59,49 +71,34 @@ def get_bottle_plan():
     Go from barrel to bottle.
     """
 
-    #version 1
     with db.engine.begin() as connection:
-        #red potion info
-        result_red_potions = connection.execute(sqlalchemy.text("SELECT amount FROM potions WHERE color = 'red'")).fetchone()
-        red_potions = result_red_potions.amount
-        result_red_ml = connection.execute(sqlalchemy.text("SELECT amount FROM ml WHERE color = 'red'")).fetchone()
-        red_ml = result_red_ml.amount
-        #green potion info
-        result_green_potions = connection.execute(sqlalchemy.text("SELECT amount FROM potions WHERE color = 'green'")).fetchone()
-        green_potions = result_green_potions.amount
-        result_green_ml = connection.execute(sqlalchemy.text("SELECT amount FROM ml WHERE color = 'green'")).fetchone()
-        green_ml = result_green_ml.amount
-        #blue potion info
-        result_blue_potions = connection.execute(sqlalchemy.text("SELECT amount FROM potions WHERE color = 'blue'")).fetchone()
-        blue_potions = result_blue_potions.amount
-        result_blue_ml = connection.execute(sqlalchemy.text("SELECT amount FROM ml WHERE color = 'blue'")).fetchone()
-        blue_ml = result_blue_ml.amount
-
-    # Each bottle has a quantity of what proportion of red, blue, and
-    # green potion to add.
-    # Expressed in integers from 1 to 100 that must sum up to 100.
-
-    # Initial logic: bottle all barrels into red potions.
-    return_list = []
-
-    if red_ml >= 100 and red_potions <= 10:
-        red_potion_num = red_ml / 100
-        print(f"bottling {red_potion_num} red potions")
-        return_list.append({"potion_type": [100,0,0,0], "quantity": int(red_potion_num)})
-        print(return_list)
-
-    if green_ml >= 100 and green_potions <= 10:
-        green_potion_num = green_ml / 100
-        print(f"bottling {green_potion_num} green potions")
-        return_list.append({"potion_type": [0,100,0,0], "quantity": int(green_potion_num)})
-        
-    if blue_ml >= 100 and blue_potions <= 10:
-        blue_potion_num = blue_ml / 100
-        print(f"bottling {blue_potion_num} blue potions")
-        return_list.append({"potion_type": [0,0,100,0], "quantity": int(blue_potion_num)})
-
+        result_potion_options = connection.execute(sqlalchemy.text("SELECT * FROM potion_option")).fetchall()
+        result_ml_amount = connection.execute(sqlalchemy.text(f"SELECT * FROM ml_log ORDER BY id DESC LIMIT 1")).fetchone()     
+        print(result_ml_amount)
     
-    return return_list # return empty array for no bottling (??) i think
+        available_red = result_ml_amount[1]
+        available_green = result_ml_amount[2]
+        available_blue = result_ml_amount[3]
+        available_dark = result_ml_amount[4]
+
+        print(available_red, available_green, available_blue, available_dark)
+        
+        return_list =[]
+        for n in result_potion_options:
+            #print(n)
+            required_red = n[3]
+            required_green = n[4]
+            required_blue = n[5]
+            required_dark = n[6]
+
+            if (available_red >= required_red) and (available_green >= required_green) and (available_blue >= required_blue) and (available_dark >= required_dark):
+                print(f"bottling {n[2]} potion...")
+                return_list.append({"potion_type": [required_red,required_green,required_blue,required_dark], "quantity": 1})
+
+        print("Bottle Transaction:")
+        for n in return_list:
+            print(n)
+        return return_list
 
 if __name__ == "__main__":
     print(get_bottle_plan())

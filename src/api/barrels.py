@@ -28,32 +28,36 @@ class Barrel(BaseModel):
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
     print("--buying barrels--")
-    print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
-
     price = 0
     red_ml = 0
     green_ml = 0
     blue_ml = 0
-
+    dark_ml = 0
     for n in barrels_delivered:
-        price += (n.price * n.quantity)
-        if n.sku.find("RED") != -1:
-            red_ml += (n.ml_per_barrel) * (n.quantity)
-        elif n.sku.find("GREEN") != -1:
-            green_ml += (n.ml_per_barrel) * (n.quantity)
-        elif n.sku.find("BLUE") != -1:
-            blue_ml += (n.ml_per_barrel) * (n.quantity)
-        else:
-            print("error, idk what color barrel, thats not an option")
+        print(n)
+        for n in barrels_delivered:
+            price += (n.price * n.quantity)
+            if n.sku.find("RED") != -1:
+                red_ml += (n.ml_per_barrel) * (n.quantity)
+            elif n.sku.find("GREEN") != -1:
+                green_ml += (n.ml_per_barrel) * (n.quantity)
+            elif n.sku.find("BLUE") != -1:
+                blue_ml += (n.ml_per_barrel) * (n.quantity)
+            elif n.sku.find("DARK") != -1:
+                dark_ml += (n.ml_per_barrel) * (n.quantity)
+            else:
+                print("error, idk what color barrel, thats not an option")
 
-    with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text(f"UPDATE ml SET amount = amount + {red_ml} WHERE color = 'red'"))
-        connection.execute(sqlalchemy.text(f"UPDATE ml SET amount = amount + {green_ml} WHERE color = 'green'"))
-        connection.execute(sqlalchemy.text(f"UPDATE ml SET amount = amount + {blue_ml} WHERE color = 'blue'"))
-        connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold = gold - {price} WHERE id = 1"))
+        print("ml bought:", red_ml, green_ml, blue_ml, dark_ml)
 
-    return "OK"
-
+        with db.engine.begin() as connection:
+            result_ml = connection.execute(sqlalchemy.text(f"SELECT * FROM ml_log ORDER BY id DESC LIMIT 1")).fetchone()
+            print("total used ml: ", red_ml, green_ml, blue_ml, dark_ml)
+            entry_id = connection.execute(sqlalchemy.text(f"INSERT INTO ml_entry (red_diff, green_diff, blue_diff, dark_diff) VALUES ({red_ml}, {green_ml}, {blue_ml}, {dark_ml}) RETURNING entry_id")).fetchone()[0]
+            print("inserting ml entry...")
+            connection.execute(sqlalchemy.text(f"INSERT INTO ml_log (red, green, blue, dark, entry_id) VALUES ({result_ml[1]+red_ml}, {result_ml[2]+green_ml}, {result_ml[3]+blue_ml}, {result_ml[4]+dark_ml}, {entry_id})"))
+            print("updating ml log...")
+            return "OK"
 
 # Gets called once a day
 @router.post("/plan")
@@ -65,64 +69,59 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         print(n)
 
     with db.engine.begin() as connection:
-        potion_list = connection.execute(sqlalchemy.text("SELECT amount FROM potions")).scalars().all()
-        ml_list = connection.execute(sqlalchemy.text("SELECT amount FROM ml")).scalars().all()
-
-        #red potion info
-        red_potions = potion_list[0]
-        red_ml = ml_list[0]
-        #green potion info
-        green_potions = potion_list[1]
-        green_ml = ml_list[1]
-        #blue potion info
-        blue_potions = potion_list[2]
-        blue_ml = ml_list[2]
-        #gold info
-        res_gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()
-        gold = res_gold.gold
-
-        print("current potions,ml count: ")
-        print(f"red: {potion_list[0]}, {ml_list[0]}")
-        print(f"green: {potion_list[1]}, {ml_list[1]}")
-        print(f"blue: {potion_list[2]}, {ml_list[2]}")
-        
-        print("Current gold:", gold)
-
-        if gold < 100:
-            return[]
-        
+        result_ml_amount = connection.execute(sqlalchemy.text(f"SELECT red, green, blue FROM ml_log ORDER BY id DESC LIMIT 1")).fetchone()     
+        red_ml = result_ml_amount[0]
+        green_ml = result_ml_amount[1]
+        blue_ml = result_ml_amount[2]
+        gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()[0]
         return_list = []
-    
-        if red_potions <= 10 and red_ml < 100:
+        if gold < 100:
+            return return_list
+        
+        if red_ml < 500:
             in_stock = 0
             for x in wholesale_catalog:
                 if x.sku == "SMALL_RED_BARREL":
-                    in_stock += 1  
+                    in_stock += x.quantity  
             if (in_stock) and (gold >= 100):
                 print("buying small red barrel")
                 gold -= 100
-                return_list.append({"sku": "SMALL_RED_BARREL","quantity": 1 })
-            
-        if green_potions <= 10 and green_ml < 100:
+                if gold > 540 and in_stock > 1:
+                    print("buying small red barrel")
+                    return_list.append({"sku": "SMALL_RED_BARREL","quantity": 2 })
+                    gold -= 100
+                else:
+                    return_list.append({"sku": "SMALL_RED_BARREL","quantity": 1 })
+
+        if green_ml < 500:
             in_stock = 0
             for x in wholesale_catalog:
                 if x.sku == "SMALL_GREEN_BARREL":
-                    in_stock += 1  
+                    in_stock += x.quantity  
             if (in_stock) and (gold >= 100):
                 print("buying small green barrel")
                 gold -= 100
-                return_list.append({"sku": "SMALL_GREEN_BARREL","quantity": 1 })
-            
-        if blue_potions <= 10 and blue_ml < 100:
+                if gold > 340 and in_stock > 1:
+                    print("buying small green barrel")
+                    return_list.append({"sku": "SMALL_GREEN_BARREL","quantity": 2 })
+                    gold -= 100
+                else:
+                    return_list.append({"sku": "SMALL_GREEN_BARREL","quantity": 1 })
+
+        if blue_ml < 500:
             in_stock = 0
             for x in wholesale_catalog:
                 if x.sku == "SMALL_BLUE_BARREL":
-                    in_stock += 1  
+                    in_stock += x.quantity  
             if (in_stock) and (gold >= 100):
                 print("buying small blue barrel")
-                gold -= 100
-                return_list.append({"sku": "SMALL_BLUE_BARREL","quantity": 1 })
-        
+                gold -= 120
+                if gold >= 240 and in_stock > 1:
+                    print("buying small green barrel")
+                    return_list.append({"sku": "SMALL_GREEN_BARREL","quantity": 2 })
+                    gold -= 120
+                else:
+                    return_list.append({"sku": "SMALL_GREEN_BARREL","quantity": 1 })
 
         return return_list
 

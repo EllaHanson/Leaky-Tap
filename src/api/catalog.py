@@ -17,22 +17,22 @@ def get_catalog():
 
     #version 1
     with db.engine.begin() as connection:
-        result_red_potions = connection.execute(sqlalchemy.text("SELECT amount FROM potions WHERE color = 'red'")).fetchone()
-        red_potions = result_red_potions.amount
-        result_green_potions = connection.execute(sqlalchemy.text("SELECT amount FROM potions WHERE color = 'green'")).fetchone()
-        green_potions = result_green_potions.amount
-        result_blue_potions = connection.execute(sqlalchemy.text("SELECT amount FROM potions WHERE color = 'blue'")).fetchone()
-        blue_potions = result_blue_potions.amount
+        result_potion_option = connection.execute(sqlalchemy.text("SELECT * FROM potion_option ORDER BY id")).fetchall()
+        result_potion_amount = connection.execute(sqlalchemy.text("SELECT * FROM potion_amount ORDER BY type_id")).fetchall()
 
         return_list = []
-        if (red_potions):
-            return_list.append({"sku": "RED_POTION", "name": "red potion", "quantity": red_potions, "price": 50, "potion_type": [100, 0, 0, 0]})
-        if (green_potions):
-            return_list.append({"sku": "GREEN_POTION", "name": "green potion", "quantity": green_potions, "price": 50, "potion_type": [0, 100, 0, 0]})
-        if (blue_potions):
-            return_list.append({"sku": "BLUE_POTION", "name": "blue potion", "quantity": blue_potions, "price": 50, "potion_type": [0, 0, 100, 0]})
-
-        print("--catalog--")
-        print(return_list)
-
+        for n in result_potion_amount:
+            amount = n[2]
+            if amount > 0:
+                potion_option = result_potion_option[n[0]-1]
+                #print(potion_option)
+                potion_type = [potion_option[3], potion_option[4], potion_option[5], potion_option[6]]
+                return_list.append({"sku": {potion_option[1]}, "name": {potion_option[2]}, "quantity": {amount}, "price": {potion_option[7]}, "potion_type": potion_type})
+                if len(return_list) == 6:
+                    for n in return_list:
+                        print(n)
+                    return return_list
+        
+        for n in return_list:
+            print(n)
         return return_list
