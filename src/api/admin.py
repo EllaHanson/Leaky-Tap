@@ -22,7 +22,8 @@ def reset():
         connection.execute(sqlalchemy.text("DELETE FROM ml_entry"))
         connection.execute(sqlalchemy.text("DELETE FROM ml_log WHERE id != 1"))
         connection.execute(sqlalchemy.text("UPDATE potions_amount SET amount = 0"))
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = 100"))
+        connection.execute(sqlalchemy.text("DELETE from gold WHERE id != 1"))
+        connection.execute(sqlalchemy.text("DELETE from gold_entry"))
         connection.execute(sqlalchemy.text("DELETE FROM customers"))
         connection.execute(sqlalchemy.text("DELETE FROM carts"))
 
