@@ -57,6 +57,11 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             print("inserting ml entry...")
             connection.execute(sqlalchemy.text(f"INSERT INTO ml_log (red, green, blue, dark, entry_id) VALUES ({result_ml[1]+red_ml}, {result_ml[2]+green_ml}, {result_ml[3]+blue_ml}, {result_ml[4]+dark_ml}, {entry_id})"))
             print("updating ml log...")
+            gold = connection.execute(sqlalchemy.text(f"SELECT balance FROM gold ORDER BY id DESC LIMIT 1")).fetchone()[0]
+            return_gold = connection.execute(sqlalchemy.text("INSERT INTO gold_entry (gold_diff) VALUES (:diff) RETURNING entry_id"), {"diff": -price})
+            gold_id = return_gold.fetchone()[0]
+            connection.execute(sqlalchemy.text("INSERT INTO gold (balance) VALUES (:new_balance)"), {"new_balance": gold-price})
+            print("updating gold...")
             return "OK"
 
 # Gets called once a day
@@ -73,7 +78,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         red_ml = result_ml_amount[0]
         green_ml = result_ml_amount[1]
         blue_ml = result_ml_amount[2]
-        gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).fetchone()[0]
+        gold = connection.execute(sqlalchemy.text(f"SELECT balance FROM gold ORDER BY id DESC LIMIT 1")).fetchone()[0]
         return_list = []
         if gold < 100:
             return return_list
