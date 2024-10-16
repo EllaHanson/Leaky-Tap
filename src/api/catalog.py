@@ -27,7 +27,7 @@ def get_catalog():
                 potion_option = result_potion_option[n[0]-1]
                 #print(potion_option)
                 potion_type = [potion_option[3], potion_option[4], potion_option[5], potion_option[6]]
-                return_list.append({"sku": {potion_option[1]}, "name": {potion_option[2]}, "quantity": {amount}, "price": {potion_option[7]}, "potion_type": potion_type})
+                return_list.append({"sku": potion_option[1], "name": potion_option[2], "quantity": amount, "price": potion_option[7], "potion_type": potion_type})
                 if len(return_list) == 6:
                     for n in return_list:
                         print(n)
