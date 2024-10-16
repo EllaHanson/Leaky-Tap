@@ -60,7 +60,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             gold = connection.execute(sqlalchemy.text(f"SELECT balance FROM gold ORDER BY id DESC LIMIT 1")).fetchone()[0]
             return_gold = connection.execute(sqlalchemy.text("INSERT INTO gold_entry (gold_diff) VALUES (:diff) RETURNING entry_id"), {"diff": -price})
             gold_id = return_gold.fetchone()[0]
-            connection.execute(sqlalchemy.text("INSERT INTO gold (balance) VALUES (:new_balance)"), {"new_balance": gold-price})
+            connection.execute(sqlalchemy.text("INSERT INTO gold (balance, entry_id) VALUES (:new_balance, :entry_id)"), {"new_balance": gold-price, "entry_id": gold_id})
             print("updating gold...")
             return "OK"
 
