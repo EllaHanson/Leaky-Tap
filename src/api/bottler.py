@@ -94,13 +94,13 @@ def get_bottle_plan():
 
             count = 0
             while (available_red >= required_red) and (available_green >= required_green) and (available_blue >= required_blue) and (available_dark >= required_dark):
-                print(f"bottling {n[2]} potion...")
                 available_red -= required_red
                 available_green -= required_green
                 available_blue -= required_blue
                 available_dark -= required_dark
                 count += 1
             if count > 0:
+                print(f"bottling {n[2]} potion...")
                 return_list.append({"potion_type": [required_red,required_green,required_blue,required_dark], "quantity": count})
 
         print("Bottle Transaction:")
