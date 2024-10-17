@@ -49,10 +49,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                 bottled_potion = [x.potion_type[0], x.potion_type[1], x.potion_type[2], x.potion_type[3]]
                 if potion_option == bottled_potion:
                     print("-adding", name)
-                    total_used_red += x.potion_type[0]
-                    total_used_green += x.potion_type[1]
-                    total_used_blue += x.potion_type[2]
-                    total_used_dark += x.potion_type[3]
+                    total_used_red += x.potion_type[0] * x.quantity
+                    total_used_green += x.potion_type[1] * x.quantity
+                    total_used_blue += x.potion_type[2] * x.quantity
+                    total_used_dark += x.potion_type[3] * x.quantity
                     #print(potion_option)
                     #print(bottled_potion)
                     connection.execute(sqlalchemy.text(f"UPDATE potion_amount SET amount = (amount + {x.quantity}) WHERE type_id = {temp_id}"))

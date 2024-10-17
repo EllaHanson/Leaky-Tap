@@ -18,7 +18,7 @@ def get_inventory():
     print("performing audit")
     with db.engine.begin() as connection:
         potions_list = connection.execute(sqlalchemy.text("SELECT amount FROM potion_amount")).fetchall()
-        ml_list = connection.execute(sqlalchemy.text("SELECT red_ml, green_ml, blue_ml, dark_ml  FROM ml_log ORDER BY id DESC LIMIT 1")).fetchone()
+        ml_list = connection.execute(sqlalchemy.text("SELECT red, green, blue, dark FROM ml_log ORDER BY id DESC LIMIT 1")).fetchone()
         gold = connection.execute(sqlalchemy.text("SELECT balance FROM gold ORDER BY id DESC LIMIT 1")).fetchone()[0]
 
         potion_count = sum(potions_list)
