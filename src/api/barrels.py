@@ -26,6 +26,7 @@ class Barrel(BaseModel):
 
 @router.post("/deliver/{order_id}")
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
+
     """ """
     print("--buying barrels--")
     price = 0
