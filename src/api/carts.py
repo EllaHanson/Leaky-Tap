@@ -126,8 +126,9 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
 
     with db.engine.begin() as connection:
         with db.engine.begin() as connection:
+           print("adding", cart_item.quantity, item_sku)
            potion_id = connection.execute(sqlalchemy.text(f"SELECT id FROM potion_option WHERE sku = '{item_sku}'")).fetchone()[0]
-           connection.execute(sqlalchemy.text(f"INSERT INTO cart_entry (cart_id, potion_option_id, amount) VALUES ('{cart_id}', {potion_id}, {cart_item.quantity})"))
+           connection.execute(sqlalchemy.text(f"INSERT INTO cart_entry (cart_id, potion_option_id, amount) VALUES ({cart_id}, {potion_id}, {cart_item.quantity})"))
         
     return "OK"
 
@@ -151,13 +152,22 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         for n in cart_entry:
             amount = n[0]
             potion_id = n[1]
-            potion_info = connection.execute(sqlalchemy.text(f"SELECT price,name from potion_option WHERE id = {potion_id}")).fetchone()
+            potion_info = connection.execute(sqlalchemy.text(f"SELECT price, name from potion_option WHERE id = {potion_id}")).fetchone()
+            connection.execute(sqlalchemy.text(f"UPDATE potion_amount SET amount = (amount - {amount}) WHERE type_id = {potion_id}"))
+
             price = potion_info[0]
             potion_name = potion_info[1]
             balance += (price * amount)
             total_potions += amount
             print(f"-{potion_name} x {amount}")
+
         connection.execute(sqlalchemy.text(f"UPDATE cart_log SET total_bought = {total_potions}, balance = {balance}"))
+        return_gold = connection.execute(sqlalchemy.text("INSERT INTO gold_entry (gold_diff) VALUES (:diff) RETURNING entry_id"), {"diff": balance})
+        curr_gold = connection.execute(sqlalchemy.text(f"SELECT balance FROM gold ORDER BY id DESC LIMIT 1")).fetchone()[0]
+        gold_id = return_gold.fetchone()[0]
+        connection.execute(sqlalchemy.text("INSERT INTO gold (balance, entry_id) VALUES (:new_balance, :entry_id)"), {"new_balance": curr_gold+balance, "entry_id": gold_id})
+        print("updating gold...")
+
         print("price: ", balance)
         print("payment: ", cart_checkout.payment)
         return {"total_potions_bought": total_potions, "total_gold_paid": balance}
