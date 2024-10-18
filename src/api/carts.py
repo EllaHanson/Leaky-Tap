@@ -81,7 +81,8 @@ class Customer(BaseModel):
 def post_visits(visit_id: int, customers: list[Customer]):
     
     print("Which customers visited the shop today?")
-    print(customers)
+    for n in customers:
+        print(n)
 
     
     with db.engine.begin() as connection:

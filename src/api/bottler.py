@@ -74,15 +74,17 @@ def get_bottle_plan():
 
     with db.engine.begin() as connection:
         result_potion_options = connection.execute(sqlalchemy.text("SELECT * FROM potion_option")).fetchall()
-        result_ml_amount = connection.execute(sqlalchemy.text(f"SELECT * FROM ml_log ORDER BY id DESC LIMIT 1")).fetchone()     
-        print(result_ml_amount)
-    
+        result_ml_amount = connection.execute(sqlalchemy.text(f"SELECT * FROM ml_log ORDER BY id DESC LIMIT 1")).fetchone()
+        result_potion_amount = connection.execute(sqlalchemy.text("SELECT * FROM potion_amount")).fetchall()
+         
         available_red = result_ml_amount[1]
         available_green = result_ml_amount[2]
         available_blue = result_ml_amount[3]
         available_dark = result_ml_amount[4]
 
-        print(available_red, available_green, available_blue, available_dark)
+        print("available ml: ", available_red, available_green, available_blue, available_dark)
+        for n in result_potion_amount:
+            print(n)
         
         return_list =[]
         for n in result_potion_options:
@@ -93,7 +95,8 @@ def get_bottle_plan():
             required_dark = n[6]
 
             count = 0
-            while (available_red >= required_red) and (available_green >= required_green) and (available_blue >= required_blue) and (available_dark >= required_dark):
+            potion_amount = result_potion_amount[n[0]-1][2]
+            while (potion_amount + count < 10) and (available_red >= required_red) and (available_green >= required_green) and (available_blue >= required_blue) and (available_dark >= required_dark):
                 available_red -= required_red
                 available_green -= required_green
                 available_blue -= required_blue
