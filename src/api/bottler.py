@@ -83,8 +83,7 @@ def get_bottle_plan():
         available_dark = result_ml_amount[4]
 
         print("available ml: ", available_red, available_green, available_blue, available_dark)
-        for n in result_potion_amount:
-            print(n)
+        
         
         return_list =[]
         for n in result_potion_options:
@@ -103,7 +102,7 @@ def get_bottle_plan():
                 available_dark -= required_dark
                 count += 1
             if count > 0:
-                print(f"bottling {n[2]} potion...")
+                print(f"bottling {count} {n[2]} potion...")
                 return_list.append({"potion_type": [required_red,required_green,required_blue,required_dark], "quantity": count})
 
         print("Bottle Transaction:")
