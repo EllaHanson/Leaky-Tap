@@ -127,7 +127,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
 
     with db.engine.begin() as connection:
         with db.engine.begin() as connection:
-           print("adding", cart_item.quantity, item_sku)
+           print("adding", cart_item.quantity, item_sku, "to cart", cart_id)
            potion_id = connection.execute(sqlalchemy.text(f"SELECT id FROM potion_option WHERE sku = '{item_sku}'")).fetchone()[0]
            connection.execute(sqlalchemy.text(f"INSERT INTO cart_entry (cart_id, potion_option_id, amount) VALUES ({cart_id}, {potion_id}, {cart_item.quantity})"))
         

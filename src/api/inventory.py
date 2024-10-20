@@ -15,7 +15,6 @@ router = APIRouter(
 @router.get("/audit")
 def get_inventory():
     """ """
-    print("performing audit")
     with db.engine.begin() as connection:
         potions_list = connection.execute(sqlalchemy.text("SELECT amount FROM potion_amount")).fetchall()
         ml_list = connection.execute(sqlalchemy.text("SELECT red, green, blue, dark FROM ml_log ORDER BY id DESC LIMIT 1")).fetchone()
@@ -25,7 +24,7 @@ def get_inventory():
         for n in potions_list:
             potion_count += n[0]
         ml_count = sum(ml_list)
-
+        print("performing audit...")
         print("audit results:")
         print("potions: ", potion_count)
         print("ml: ", ml_count)

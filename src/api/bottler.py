@@ -84,7 +84,6 @@ def get_bottle_plan():
 
         print("available ml: ", available_red, available_green, available_blue, available_dark)
         
-        
         return_list =[]
         for n in result_potion_options:
             #print(n)
