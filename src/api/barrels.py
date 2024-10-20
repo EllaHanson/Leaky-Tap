@@ -87,6 +87,20 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         if gold < 100:
             return return_list
         
+        if blue_ml < 500:
+            in_stock = 0
+            for x in wholesale_catalog:
+                if x.sku == "SMALL_BLUE_BARREL":
+                    in_stock += x.quantity  
+            if (in_stock > 1) and (gold >= 240):
+                print("buying 2 small blue barrel")
+                return_list.append({"sku": "SMALL_BLUE_BARREL","quantity": 2 })
+                gold -= 240
+            elif (in_stock) and (gold >= 120):
+                print("buying 1 small blue barrel")
+                return_list.append({"sku": "SMALL_BLUE_BARREL","quantity": 1 })
+                gold -= 120
+        
         if red_ml < 500:
             in_stock = 0
             # in_stock = amount of small red barrels in catalog
@@ -117,20 +131,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 return_list.append({"sku": "SMALL_GREEN_BARREL","quantity": 1 })
                 gold -= 100
 
-
-        if blue_ml < 500:
-            in_stock = 0
-            for x in wholesale_catalog:
-                if x.sku == "SMALL_BLUE_BARREL":
-                    in_stock += x.quantity  
-            if (in_stock > 1) and (gold >= 240):
-                print("buying 2 small blue barrel")
-                return_list.append({"sku": "SMALL_BLUE_BARREL","quantity": 2 })
-                gold -= 240
-            elif (in_stock) and (gold >= 120):
-                print("buying 1 small blue barrel")
-                return_list.append({"sku": "SMALL_BLUE_BARREL","quantity": 1 })
-                gold -= 120
 
         return return_list
 
