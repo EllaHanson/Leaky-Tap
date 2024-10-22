@@ -26,25 +26,21 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     for n in potions_delivered:
         print(n)
 
+    total_used_red = 0
+    total_used_green = 0
+    total_used_blue = 0
+    total_used_dark = 0
+
     with db.engine.begin() as connection:
-        result_potion_options = connection.execute(sqlalchemy.text("SELECT * FROM potion_option")).fetchall()
-        result_potion_amount = connection.execute(sqlalchemy.text("SELECT * FROM potion_amount")).fetchall()
-        total_used_red = 0
-        total_used_green = 0
-        total_used_blue = 0
-        total_used_dark = 0
+        result_potion_options = connection.execute(sqlalchemy.text("SELECT * FROM potion_option ORDER BY id")).fetchall()
+        result_potion_amount = connection.execute(sqlalchemy.text("SELECT * FROM potion_amount ORDER BY type_id")).fetchall()
     
         for n in result_potion_options:
-            #print(n)
             temp_id = n[0]
             sku = n[1]
             name = n[2]
-            required_red = n[3]
-            required_green = n[4]
-            required_blue = n[5]
-            required_dark = n[6]
-            potion_option = [required_red, required_green, required_blue, required_dark]
-            #print(potion_option)
+            potion_option = [n[3], n[4], n[5], n[6]]
+
             for x in potions_delivered:
                 bottled_potion = [x.potion_type[0], x.potion_type[1], x.potion_type[2], x.potion_type[3]]
                 if potion_option == bottled_potion:
@@ -53,8 +49,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                     total_used_green += x.potion_type[1] * x.quantity
                     total_used_blue += x.potion_type[2] * x.quantity
                     total_used_dark += x.potion_type[3] * x.quantity
-                    #print(potion_option)
-                    #print(bottled_potion)
+     
                     connection.execute(sqlalchemy.text(f"UPDATE potion_amount SET amount = (amount + {x.quantity}) WHERE type_id = {temp_id}"))
 
         result_ml = connection.execute(sqlalchemy.text(f"SELECT * FROM ml_log ORDER BY id DESC LIMIT 1")).fetchone()
@@ -73,16 +68,23 @@ def get_bottle_plan():
     """
 
     with db.engine.begin() as connection:
-        result_potion_options = connection.execute(sqlalchemy.text("SELECT * FROM potion_option")).fetchall()
+        result_potion_options = connection.execute(sqlalchemy.text("SELECT * FROM potion_option ORDER BY id")).fetchall()
         result_ml_amount = connection.execute(sqlalchemy.text(f"SELECT * FROM ml_log ORDER BY id DESC LIMIT 1")).fetchone()
-        result_potion_amount = connection.execute(sqlalchemy.text("SELECT * FROM potion_amount")).fetchall()
-         
+        result_potion_amount = connection.execute(sqlalchemy.text("SELECT * FROM potion_amount ORDER BY type_id")).fetchall()
+
+        for n in result_potion_amount:
+            print(n)
+
         available_red = result_ml_amount[1]
         available_green = result_ml_amount[2]
         available_blue = result_ml_amount[3]
         available_dark = result_ml_amount[4]
 
-        print("available ml: ", available_red, available_green, available_blue, available_dark)
+        print("available ml: ")
+        print("  red -", available_red)
+        print("  green -", available_green)
+        print("  blue -", available_blue)
+        print("  dark -", available_dark)
         
         return_list =[]
         for n in result_potion_options:

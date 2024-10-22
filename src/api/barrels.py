@@ -66,7 +66,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         gold_id = return_gold.fetchone()[0]
         connection.execute(sqlalchemy.text("INSERT INTO gold (balance, entry_id) VALUES (:new_balance, :entry_id)"), {"new_balance": gold-price, "entry_id": gold_id})
 
-        return "OK"
+    return "OK"
 
 # Gets called once a day
 @router.post("/plan")
