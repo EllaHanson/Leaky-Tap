@@ -31,11 +31,13 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     print("--buying barrels--")
     for n in barrels_delivered:
         print(n)
+
     price = 0
     red_ml = 0
     green_ml = 0
     blue_ml = 0
     dark_ml = 0
+
     for n in barrels_delivered:
         price += (n.price * n.quantity)
         if n.sku.find("RED") != -1:
@@ -52,19 +54,16 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     print("ml bought:", red_ml, green_ml, blue_ml, dark_ml)
 
     with db.engine.begin() as connection:
-        result_ml = connection.execute(sqlalchemy.text(f"SELECT * FROM ml_log ORDER BY id DESC LIMIT 1")).fetchone()
         print("total used ml: ", red_ml, green_ml, blue_ml, dark_ml)
 
         print("inserting ml entry...")
-        entry_id = connection.execute(sqlalchemy.text(f"INSERT INTO ml_entry (red_diff, green_diff, blue_diff, dark_diff) VALUES ({red_ml}, {green_ml}, {blue_ml}, {dark_ml}) RETURNING entry_id")).fetchone()[0]
+        connection.execute(sqlalchemy.text(f"INSERT INTO ml_entry (red_diff, green_diff, blue_diff, dark_diff) VALUES ({red_ml}, {green_ml}, {blue_ml}, {dark_ml})"))
         print("updating ml log...")
-        connection.execute(sqlalchemy.text(f"INSERT INTO ml_log (red, green, blue, dark, entry_id) VALUES ({result_ml[1]+red_ml}, {result_ml[2]+green_ml}, {result_ml[3]+blue_ml}, {result_ml[4]+dark_ml}, {entry_id})"))
+        connection.execute(sqlalchemy.text("UPDATE ml SET red = red + :red_diff, green = green + :green_diff, blue = blue + :blue_diff, dark = dark + :dark_diff"), {"red_diff": red_ml , "green_diff": green_ml, "blue_diff": blue_ml, "dark_diff": dark_ml})
 
         print("updating gold...")
-        gold = connection.execute(sqlalchemy.text(f"SELECT balance FROM gold ORDER BY id DESC LIMIT 1")).fetchone()[0]
-        return_gold = connection.execute(sqlalchemy.text("INSERT INTO gold_entry (gold_diff) VALUES (:diff) RETURNING entry_id"), {"diff": -price})
-        gold_id = return_gold.fetchone()[0]
-        connection.execute(sqlalchemy.text("INSERT INTO gold (balance, entry_id) VALUES (:new_balance, :entry_id)"), {"new_balance": gold-price, "entry_id": gold_id})
+        connection.execute(sqlalchemy.text("UPDATE balance SET gold = gold - :gold_diff"), {"gold_diff": price})
+        connection.execute(sqlalchemy.text("INSERT INTO gold_entry (gold_diff) VALUES (:diff)"), {"diff": -price})
 
     return "OK"
 
@@ -78,12 +77,12 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         print(n)
 
     with db.engine.begin() as connection:
-        result_ml_amount = connection.execute(sqlalchemy.text(f"SELECT red, green, blue FROM ml_log ORDER BY id DESC LIMIT 1")).fetchone()     
-        red_ml = result_ml_amount[0]
-        green_ml = result_ml_amount[1]
-        blue_ml = result_ml_amount[2]
-        gold = connection.execute(sqlalchemy.text(f"SELECT balance FROM gold ORDER BY id DESC LIMIT 1")).fetchone()[0]
-        return_list = []
+        result_ml_amount = connection.execute(sqlalchemy.text(f"SELECT red, green, blue FROM ml WHERE id = 1")).fetchone()     
+        red_ml = result_ml_amount.red
+        green_ml = result_ml_amount.green
+        blue_ml = result_ml_amount.blue
+        gold = connection.execute(sqlalchemy.text(f"SELECT gold FROM balance WHERE id = 1")).fetchone()[0]
+        return_list = [] 
         if gold < 100:
             return return_list
         

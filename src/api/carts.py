@@ -139,10 +139,9 @@ class CartCheckout(BaseModel):
 
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
-    print("--checkout--")
-    """ """
 
     with db.engine.begin() as connection:
+        print("--checkout--")
         cart_entry = connection.execute(sqlalchemy.text(f"SELECT amount, potion_option_id from cart_entry WHERE cart_id = {cart_id}")).fetchall()
         customer_id = connection.execute(sqlalchemy.text(f"SELECT customer_id FROM cart_log WHERE cart_id = {cart_id}")).fetchone()[0]
         customer_name = connection.execute(sqlalchemy.text(f"SELECT name FROM customers WHERE customer_id = {customer_id}")).fetchone()[0]
