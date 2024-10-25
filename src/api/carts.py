@@ -164,10 +164,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
         connection.execute(sqlalchemy.text(f"UPDATE cart_log SET total_bought = {total_potions}, balance = {balance} WHERE cart_id = {cart_id}"))
         return_gold = connection.execute(sqlalchemy.text("INSERT INTO gold_entry (gold_diff) VALUES (:diff) RETURNING entry_id"), {"diff": balance})
-        curr_gold = connection.execute(sqlalchemy.text(f"SELECT balance FROM gold ORDER BY id DESC LIMIT 1")).fetchone()[0]
-        gold_id = return_gold.fetchone()[0]
-        connection.execute(sqlalchemy.text("INSERT INTO gold (balance, entry_id) VALUES (:new_balance, :entry_id)"), {"new_balance": curr_gold+balance, "entry_id": gold_id})
-        print("updating gold...")
+        connection.execute(sqlalchemy.text("UPDATE balance SET gold = gold + :gold_diff"), {"gold_diff": balance})
 
         print("price: ", balance)
         print("payment: ", cart_checkout.payment)
