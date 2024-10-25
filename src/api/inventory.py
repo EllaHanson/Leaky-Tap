@@ -17,8 +17,8 @@ def get_inventory():
     """ """
     with db.engine.begin() as connection:
         potions_list = connection.execute(sqlalchemy.text("SELECT amount FROM potion_amount")).fetchall()
-        ml_list = connection.execute(sqlalchemy.text("SELECT red, green, blue, dark FROM ml_log ORDER BY id DESC LIMIT 1")).fetchone()
-        gold = connection.execute(sqlalchemy.text("SELECT balance FROM gold ORDER BY id DESC LIMIT 1")).fetchone()[0]
+        ml_list = connection.execute(sqlalchemy.text("SELECT red, green, blue, dark FROM ml WHERE id = 1")).fetchone()
+        gold = connection.execute(sqlalchemy.text("SELECT gold FROM balance WHERE id = 1")).fetchone()[0]
 
         potion_count = 0
         for n in potions_list:
