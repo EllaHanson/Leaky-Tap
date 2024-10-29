@@ -71,8 +71,8 @@ def get_bottle_plan():
 
     with db.engine.begin() as connection:
         result_potion_options = connection.execute(sqlalchemy.text("SELECT * FROM potion_option ORDER BY id")).fetchall()
-        result_ml_amount = connection.execute(sqlalchemy.text(f"SELECT red, green, blue, dark FROM ml WHERE id = 1")).fetchone()
-        potion_amount = connection.execute(sqlalchemy.text("SELECT * FROM potion_amount ORDER BY type_id")).fetchall()
+        result_ml_amount = connection.execute(sqlalchemy.text("SELECT SUM(red_diff) AS red, SUM(green_diff) AS green, SUM(blue_diff) AS blue, SUM(dark_diff) AS dark FROM ml_entry")).fetchone()     
+        potion_amount = connection.execute(sqlalchemy.text("SELECT potion_id, SUM(amount) as amount FROM potion_log GROUP BY potion_id HAVING SUM(amount) > 0")).fetchall()
 
         available_red = result_ml_amount.red
         available_green = result_ml_amount.green
@@ -84,18 +84,23 @@ def get_bottle_plan():
         print("  green -", available_green)
         print("  blue -", available_blue)
         print("  dark -", available_dark)
-        
+
         return_list =[]
+
         for n in result_potion_options:
-            #print(n)
+            option_id = n.id
             required_red = n.red
             required_green = n.green
             required_blue = n.blue
             required_dark = n.dark
 
             count = 0
-            potion_num = potion_amount[n.id-1].amount
-            
+            potion_num = 0
+            for x in potion_amount:
+                if x.potion_id == option_id:
+                    potion_num = x.amount
+                    break
+
             while (potion_num + count < 5) and (available_red >= required_red) and (available_green >= required_green) and (available_blue >= required_blue) and (available_dark >= required_dark):
                 available_red -= required_red
                 available_green -= required_green

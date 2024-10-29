@@ -19,6 +19,7 @@ def get_inventory():
         potions_list = connection.execute(sqlalchemy.text("SELECT amount FROM potion_amount")).fetchall()
         ml_list = connection.execute(sqlalchemy.text("SELECT red, green, blue, dark FROM ml WHERE id = 1")).fetchone()
         gold = connection.execute(sqlalchemy.text("SELECT gold FROM balance WHERE id = 1")).fetchone()[0]
+        #num = connection.execute(sqlalchemy.text("SELECT sum(red_diff), sum(green_diff), sum(blue_diff) FROM ml_entry")).fetchone()
 
         potion_count = 0
         for n in potions_list:
