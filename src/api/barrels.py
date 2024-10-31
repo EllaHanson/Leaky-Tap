@@ -57,10 +57,10 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         print("total used ml: ", red_ml, green_ml, blue_ml, dark_ml)
 
         print("inserting ml entry...")
-        connection.execute(sqlalchemy.text(f"INSERT INTO ml_entry (red_diff, green_diff, blue_diff, dark_diff) VALUES ({red_ml}, {green_ml}, {blue_ml}, {dark_ml})"))
+        connection.execute(sqlalchemy.text(f"INSERT INTO ml (red_diff, green_diff, blue_diff, dark_diff) VALUES ({red_ml}, {green_ml}, {blue_ml}, {dark_ml})"))
 
         print("inserting gold entry...")
-        connection.execute(sqlalchemy.text("INSERT INTO gold_entry (gold_diff) VALUES (:diff)"), {"diff": -price})
+        connection.execute(sqlalchemy.text("INSERT INTO gold (gold_diff) VALUES (:diff)"), {"diff": -price})
 
     return "OK"
 
@@ -74,11 +74,11 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         print(n)
 
     with db.engine.begin() as connection:
-        result_ml_amount = connection.execute(sqlalchemy.text("SELECT SUM(red_diff) AS total_red, SUM(green_diff) AS total_green, SUM(blue_diff) AS total_blue FROM ml_entry")).fetchone()     
+        result_ml_amount = connection.execute(sqlalchemy.text("SELECT SUM(red_diff) AS total_red, SUM(green_diff) AS total_green, SUM(blue_diff) AS total_blue FROM ml")).fetchone()     
         red_ml = result_ml_amount.total_red
         green_ml = result_ml_amount.total_green
         blue_ml = result_ml_amount.total_blue
-        gold = connection.execute(sqlalchemy.text("SELECT sum(gold_diff) FROM gold_entry")).fetchone()[0]
+        gold = connection.execute(sqlalchemy.text("SELECT sum(gold_diff) FROM gold")).fetchone()[0]
         return_list = [] 
         
         if gold < 100:
@@ -98,20 +98,21 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         red_count = 0
         green_count = 0
         blue_count = 0
+
         while (gold >= 100 and (red_stock or green_stock)) or (gold >= 120 and blue_stock):
-            if (red_stock) and (gold > 100):
+            if (red_stock) and (gold >= 100):
                 red_count += 1
                 red_stock -= 1             
                 gold -= 100
-            if (green_stock) and (gold > 100):
+            if (green_stock) and (gold >= 100):
                 green_count += 1
-                green_stock -= 1             
+                green_stock -= 1
                 gold -= 100
-            if (blue_stock) and (gold > 120):
+            if (blue_stock) and (gold >= 120):
                 blue_count += 1
                 blue_stock -= 1             
                 gold -= 120
-        
+
         if (red_count):
             return_list.append({"sku": "SMALL_RED_BARREL","quantity": red_count})
         if (green_count):

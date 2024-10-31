@@ -30,16 +30,18 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     total_used_green = 0
     total_used_blue = 0
     total_used_dark = 0
+    potions_add = []
 
     with db.engine.begin() as connection:
-        result_potion_options = connection.execute(sqlalchemy.text("SELECT * FROM potion_option ORDER BY id")).fetchall()
-        result_potion_amount = connection.execute(sqlalchemy.text("SELECT * FROM potion_amount ORDER BY type_id")).fetchall()
+        result_potion_options = connection.execute(sqlalchemy.text("SELECT id, sku, name, red, green, blue, dark, price FROM potion_option ORDER BY id")).fetchall()
+        result_potion_amount = connection.execute(sqlalchemy.text("SELECT potion_id, SUM(amount) as amount FROM potion_log GROUP BY potion_id HAVING SUM(amount) > 0")).fetchall()
+
     
         for n in result_potion_options:
-            temp_id = n[0]
-            sku = n[1]
-            name = n[2]
-            potion_option = [n[3], n[4], n[5], n[6]]
+            temp_id = n.id
+            sku = n.sku
+            name = n.name
+            potion_option = [n.red, n.green, n.blue, n.dark]
 
             for x in potions_delivered:
                 bottled_potion = [x.potion_type[0], x.potion_type[1], x.potion_type[2], x.potion_type[3]]
@@ -49,16 +51,15 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                     total_used_green += x.potion_type[1] * x.quantity
                     total_used_blue += x.potion_type[2] * x.quantity
                     total_used_dark += x.potion_type[3] * x.quantity
+                    potions_add.append((x.quantity, temp_id))
      
-                    connection.execute(sqlalchemy.text("UPDATE potion_amount SET amount = (amount + :amount_diff) WHERE type_id = :id"), {"amount_diff": x.quantity, "id": temp_id})
-
     with db.engine.begin() as connection:
-        result_ml = connection.execute(sqlalchemy.text(f"SELECT red, green, blue, dark FROM ml WHERE id = 1")).fetchone()
         print("total used ml: ", total_used_red, total_used_green, total_used_blue, total_used_dark)
         print("inserting ml entry...")
-        connection.execute(sqlalchemy.text(f"INSERT INTO ml_entry (red_diff, green_diff, blue_diff, dark_diff) VALUES (:red, :green, :blue, :dark)"), {"red": -total_used_red, "green": -total_used_green, "blue": -total_used_blue, "dark": -total_used_dark})
-        print("updating ml log...")
-        connection.execute(sqlalchemy.text("UPDATE ml SET red = red + :red_diff, green = green + :green_diff, blue = blue + :blue_diff, dark = dark + :dark_diff"), {"red_diff": -total_used_red , "green_diff": -total_used_green, "blue_diff": -total_used_blue, "dark_diff": -total_used_dark})
+        connection.execute(sqlalchemy.text("INSERT INTO ml (red_diff, green_diff, blue_diff, dark_diff) VALUES (:red, :green, :blue, :dark)"), {"red": -total_used_red, "green": -total_used_green, "blue": -total_used_blue, "dark": -total_used_dark})
+        print("inserting potion log...")
+        for n in potions_add:
+            connection.execute(sqlalchemy.text("INSERT INTO potion_log (potion_id, amount) VALUES (:id, :num)"), {"id": n[1], "num": n[0]})
 
     return "OK"
 
@@ -71,7 +72,7 @@ def get_bottle_plan():
 
     with db.engine.begin() as connection:
         result_potion_options = connection.execute(sqlalchemy.text("SELECT * FROM potion_option ORDER BY id")).fetchall()
-        result_ml_amount = connection.execute(sqlalchemy.text("SELECT SUM(red_diff) AS red, SUM(green_diff) AS green, SUM(blue_diff) AS blue, SUM(dark_diff) AS dark FROM ml_entry")).fetchone()     
+        result_ml_amount = connection.execute(sqlalchemy.text("SELECT SUM(red_diff) AS red, SUM(green_diff) AS green, SUM(blue_diff) AS blue, SUM(dark_diff) AS dark FROM ml")).fetchone()     
         potion_amount = connection.execute(sqlalchemy.text("SELECT potion_id, SUM(amount) as amount FROM potion_log GROUP BY potion_id HAVING SUM(amount) > 0")).fetchall()
 
         available_red = result_ml_amount.red

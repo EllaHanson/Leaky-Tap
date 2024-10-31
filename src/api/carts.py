@@ -142,29 +142,28 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
     with db.engine.begin() as connection:
         print("--checkout--")
-        cart_entry = connection.execute(sqlalchemy.text(f"SELECT amount, potion_option_id from cart_entry WHERE cart_id = {cart_id}")).fetchall()
-        customer_id = connection.execute(sqlalchemy.text(f"SELECT customer_id FROM cart_log WHERE cart_id = {cart_id}")).fetchone()[0]
-        customer_name = connection.execute(sqlalchemy.text(f"SELECT name FROM customers WHERE customer_id = {customer_id}")).fetchone()[0]
+        cart_entry = connection.execute(sqlalchemy.text("SELECT amount, potion_option_id from cart_entry WHERE cart_id = :temp_id"), {"temp_id": cart_id}).fetchall()
+        customer_id = connection.execute(sqlalchemy.text("SELECT customer_id FROM cart_log WHERE cart_id = :temp_id"), {"temp_id": cart_id}).fetchone()[0]
+        customer_name = connection.execute(sqlalchemy.text("SELECT name FROM customers WHERE customer_id = :temp_id"), {"temp_id": customer_id}).fetchone()[0]
         balance = 0
         total_potions = 0
 
         print(f"{customer_name}'s recipt:")
         for n in cart_entry:
-            amount = n[0]
-            potion_id = n[1]
-            potion_info = connection.execute(sqlalchemy.text(f"SELECT price, name from potion_option WHERE id = {potion_id}")).fetchone()
-            connection.execute(sqlalchemy.text(f"UPDATE potion_amount SET amount = (amount - {amount}) WHERE type_id = {potion_id}"))
+            amount = n.amount
+            potion_id = n.potion_option_id
+            potion_info = connection.execute(sqlalchemy.text("SELECT price, name from potion_option WHERE id = :temp_id"), {"temp_id": potion_id}).fetchone()
+            connection.execute(sqlalchemy.text("INSERT INTO potion_log (potion_id, amount) VALUES (:temp_potion_id, :temp_amount)"), {"temp_amount": -amount, "temp_potion_id": potion_id})
 
-            price = potion_info[0]
-            potion_name = potion_info[1]
+            price = potion_info.price
+            potion_name = potion_info.name
             balance += (price * amount)
             total_potions += amount
             print(f"-{potion_name} x {amount}")
         
 
         connection.execute(sqlalchemy.text(f"UPDATE cart_log SET total_bought = {total_potions}, balance = {balance} WHERE cart_id = {cart_id}"))
-        return_gold = connection.execute(sqlalchemy.text("INSERT INTO gold_entry (gold_diff) VALUES (:diff) RETURNING entry_id"), {"diff": balance})
-        connection.execute(sqlalchemy.text("UPDATE balance SET gold = gold + :gold_diff"), {"gold_diff": balance})
+        connection.execute(sqlalchemy.text("INSERT INTO gold (gold_diff) VALUES (:diff)"), {"diff": balance})
 
         print("price: ", balance)
         print("payment: ", cart_checkout.payment)
