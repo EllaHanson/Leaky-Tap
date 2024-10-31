@@ -17,8 +17,8 @@ def get_inventory():
     """ """
     with db.engine.begin() as connection:
         print("performing audit...")
-        potion_count = connection.execute(sqlalchemy.text("SELECT SUM(amount) as amount FROM potion_log")).fetchone()[0]
-        ml = connection.execute(sqlalchemy.text("SELECT SUM(red_diff) AS red, SUM(green_diff) AS green, SUM(blue_diff) AS blue, SUM(dark_diff) AS dark FROM ml")).fetchone()     
+        potion_count = connection.execute(sqlalchemy.text("SELECT COALESCE(SUM(amount), 0) as amount FROM potion_log")).fetchone()[0]
+        ml = connection.execute(sqlalchemy.text("SELECT COALESCE(SUM(red_diff), 0) AS red, COALESCE(SUM(green_diff), 0) AS green, COALESCE(SUM(blue_diff), 0) AS blue, COALESCE(SUM(dark_diff), 0) AS dark FROM ml")).fetchone()     
         gold = connection.execute(sqlalchemy.text("SELECT sum(gold_diff) FROM gold")).fetchone()[0]
         ml_count = ml.red + ml.green + ml.blue + ml.dark
 
