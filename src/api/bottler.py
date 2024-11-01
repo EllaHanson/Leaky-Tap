@@ -72,7 +72,7 @@ def get_bottle_plan():
 
     with db.engine.begin() as connection:
         result_potion_options = connection.execute(sqlalchemy.text("SELECT * FROM potion_option ORDER BY id")).fetchall()
-        result_ml_amount = connection.execute(sqlalchemy.text("SELECT SUM(red_diff) AS red, SUM(green_diff) AS green, SUM(blue_diff) AS blue, SUM(dark_diff) AS dark FROM ml")).fetchone()     
+        result_ml_amount = connection.execute(sqlalchemy.text("SELECT COALESCE(SUM(red_diff), 0) AS red, COALESCE(SUM(green_diff), 0) AS green, COALESCE(SUM(blue_diff), 0) AS blue, COALESCE(SUM(dark_diff), 0) AS dark FROM ml")).fetchone()     
         potion_amount = connection.execute(sqlalchemy.text("SELECT potion_id, SUM(amount) as amount FROM potion_log GROUP BY potion_id HAVING SUM(amount) > 0")).fetchall()
 
         available_red = result_ml_amount.red
