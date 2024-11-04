@@ -79,6 +79,10 @@ def get_bottle_plan():
         available_green = result_ml_amount.green
         available_blue = result_ml_amount.blue
         available_dark = result_ml_amount.dark
+        
+        total_potion_num = 0
+        for n in potion_amount:
+            total_potion_num += n.amount
 
         print("available ml: ")
         print("  red -", available_red)
@@ -87,6 +91,8 @@ def get_bottle_plan():
         print("  dark -", available_dark)
 
         return_list =[]
+
+        total_made_potions = 0
 
         for n in result_potion_options:
             option_id = n.id
@@ -102,7 +108,7 @@ def get_bottle_plan():
                     potion_num = x.amount
                     break
 
-            while (potion_num + count < 15) and (available_red >= required_red) and (available_green >= required_green) and (available_blue >= required_blue) and (available_dark >= required_dark):
+            while (potion_num + count < 10) and (total_made_potions + total_potion_num + count < 50) and (available_red >= required_red) and (available_green >= required_green) and (available_blue >= required_blue) and (available_dark >= required_dark):
                 available_red -= required_red
                 available_green -= required_green
                 available_blue -= required_blue
@@ -111,6 +117,7 @@ def get_bottle_plan():
             if count > 0:
                 print(f"bottling {count} {n.sku} potion...")
                 return_list.append({"potion_type": [required_red,required_green,required_blue,required_dark], "quantity": count})
+                total_made_potions += count
             
         print("Bottle Transaction:")
         for n in return_list:
