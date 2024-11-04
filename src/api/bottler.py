@@ -102,7 +102,7 @@ def get_bottle_plan():
                     potion_num = x.amount
                     break
 
-            while (potion_num + count < 5) and (available_red >= required_red) and (available_green >= required_green) and (available_blue >= required_blue) and (available_dark >= required_dark):
+            while (potion_num + count < 15) and (available_red >= required_red) and (available_green >= required_green) and (available_blue >= required_blue) and (available_dark >= required_dark):
                 available_red -= required_red
                 available_green -= required_green
                 available_blue -= required_blue
