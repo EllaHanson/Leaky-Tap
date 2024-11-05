@@ -101,7 +101,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         blue_count = 0
         total_bought = 0
 
-        while (gold >= 100 and (red_stock or green_stock)) or (gold >= 120 and blue_stock) or (total_ml + total_bought < 10000):
+        while ((gold >= 100 and (red_stock or green_stock)) or (gold >= 120 and blue_stock)) and (total_ml + total_bought < 10000):
             if (red_stock) and (gold >= 100):
                 red_count += 1
                 red_stock -= 1             
