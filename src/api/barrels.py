@@ -81,6 +81,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         total_ml = red_ml + green_ml + blue_ml
         gold = connection.execute(sqlalchemy.text("SELECT sum(gold_diff) FROM gold")).fetchone()[0]
         return_list = [] 
+
+        print (total_ml)
         
         if gold < 100:
             return return_list
@@ -101,7 +103,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         blue_count = 0
         total_bought = 0
 
-        while ((gold >= 100 and (red_stock or green_stock)) or (gold >= 120 and blue_stock)) and (total_ml + total_bought < 10000):
+        while ((gold >= 100 and (red_stock or green_stock)) or (gold >= 120 and blue_stock)) and (total_ml + total_bought + 1500 < 10000):
             if (red_stock) and (gold >= 100):
                 red_count += 1
                 red_stock -= 1             
@@ -117,7 +119,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 blue_stock -= 1             
                 gold -= 120
                 total_bought += 500
-
 
         if (red_count):
             return_list.append({"sku": "SMALL_RED_BARREL","quantity": red_count})
