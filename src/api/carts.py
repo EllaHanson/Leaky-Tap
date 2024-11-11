@@ -93,27 +93,25 @@ def search_orders(
 
     previous = ""
     next = ""
+    
+    tags = {
+        "sort_col": sort_col,
+        "sort_order": sort_order,
+    }
+    if customer_name:
+        tags["customer_name"] = customer_name
+    if potion_sku:
+        tags["potion_sku"] = potion_sku
 
     if len(result_orders) > line_id:
-        tags = {
-        "customer_name": customer_name,
-        "potion_sku": potion_sku,
-        "search_page": str(int(search_page) - 1),
-        "sort_col": sort_col,
-        "sort_order": sort_order
-        }
+        tags["search_page"] = str(int(search_page) + 1)
         next = f"https://leaky-tap.onrender.com/carts/search/?{urlencode(tags)}"
+        print(next)
 
     if int(search_page) > 1:
-        tags = {
-        "customer_name": customer_name,
-        "potion_sku": potion_sku,
-        "search_page": str(int(search_page) + 1),
-        "sort_col": sort_col,
-        "sort_order": sort_order
-        }
-        print("previous")
-
+        tags["search_page"] = str(int(search_page) - 1)
+        previous = f"https://leaky-tap.onrender.com/carts/search/?{urlencode(tags)}"
+        print(previous)
     
     for n in return_list:
         print(n)
