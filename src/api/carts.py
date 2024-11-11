@@ -119,25 +119,10 @@ def search_orders(
         print(n)
         
     return {
-        "previous": "",
-        "next": "",
-        "results": [
-            {
-                "line_item_id": 1,
-                "item_sku": "1 oblivion potion",
-                "customer_name": "Scaramouche",
-                "line_item_total": 50,
-                "timestamp": "2021-01-01T00:00:00Z",
-            }
-        ],
-    }
-"""
-    return {
         "previous": previous,
         "next": next,
         "results": return_list
     }
-"""
 
 class Customer(BaseModel):
     customer_name: str
