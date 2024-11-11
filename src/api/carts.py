@@ -119,8 +119,8 @@ def search_orders(
         print(n)
 
     return {
-        "previous": "",
-        "next": "",
+        "previous": previous,
+        "next": next,
         "results": return_list
     }
         
