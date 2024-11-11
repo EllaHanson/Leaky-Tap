@@ -78,8 +78,14 @@ def search_orders(
 
         result_orders = connection.execute(sqlalchemy.text(search)).fetchall()
     
+    if search_page:
+        page = int(search_page)
+    else:
+        page = 1
+    print(page)
+    
     return_list = []
-    line_id = 1 #+ ((int(search_page) - 1) * 5)
+    line_id = 1 + ((page - 1) * 5)
     while len(return_list) < 5 and line_id <= len(result_orders):
         time = datetime.fromisoformat(str(result_orders[line_id-1].created_at))
         return_list.append({
@@ -104,12 +110,12 @@ def search_orders(
         tags["potion_sku"] = potion_sku
 
     if len(result_orders) > line_id:
-        tags["search_page"] = str(int(search_page) + 1)
+        tags["search_page"] = str(page + 1)
         next = f"https://leaky-tap.onrender.com/carts/search/?{urlencode(tags)}"
         print(next)
 
-    if int(search_page) > 1:
-        tags["search_page"] = str(int(search_page) - 1)
+    if int(page) > 1:
+        tags["search_page"] = str(page - 1)
         previous = f"https://leaky-tap.onrender.com/carts/search/?{urlencode(tags)}"
         print(previous)
     
