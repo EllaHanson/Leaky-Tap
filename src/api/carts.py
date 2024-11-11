@@ -74,7 +74,14 @@ def search_orders(
             search += "sku LIKE '%"
             search += potion_sku
             search += "%'"
-        search += " ORDER BY created_at"
+        search += " ORDER BY "
+        if sort_col == "customer_name": search += "customers.name"
+        if sort_col == "item_sku": search += "sku"
+        if sort_col == "line_item_total": search += "amount * price"
+        if sort_col == "timestamp": search += "created_at"
+
+        if sort_order == 'desc': search += " desc"
+
 
         result_orders = connection.execute(sqlalchemy.text(search)).fetchall()
     
