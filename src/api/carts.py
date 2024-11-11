@@ -112,12 +112,12 @@ def search_orders(
 
     if len(result_orders) > line_id - 1:
         tags["search_page"] = str(page + 1)
-        next = f"https://leaky-tap.onrender.com/carts/search/?{urlencode(tags)}"
+        next = {urlencode(tags)}
         print(next)
 
     if page > 1:
         tags["search_page"] = str(page - 1)
-        previous = f"https://leaky-tap.onrender.com/carts/search/?{urlencode(tags)}"
+        previous = {urlencode(tags)}
         print(previous)
     
     for n in return_list:
