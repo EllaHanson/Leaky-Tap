@@ -72,11 +72,12 @@ def search_orders(
             search += "sku = '"
             search += potion_sku
             search += "'"
+        search += " ORDER BY created_at"
 
         result_orders = connection.execute(sqlalchemy.text(search)).fetchall()
     
     return_list = []
-    line_id = 1
+    line_id = 1 + ((int(search_page) - 1) * 5)
     while len(return_list) < 5 and line_id <= len(result_orders):
         time = datetime.fromisoformat(str(result_orders[line_id-1].created_at))
         return_list.append({
@@ -88,25 +89,36 @@ def search_orders(
         })
         line_id += 1
 
-    next_list = []
-    while len(next_list) < 5 and line_id <= len(result_orders):
-        time = datetime.fromisoformat(str(result_orders[line_id-1].created_at))
-        next_list.append({
-            "line_item_id": line_id,
-            "item_sku": result_orders[line_id-1].sku,
-            "customer_name": result_orders[line_id-1].name,
-            "line_item_total": result_orders[line_id-1].amount * result_orders[line_id-1].price,
-            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        })
-        line_id += 1
+    previous = ""
+    next = ""
+
+    if len(result_orders) > line_id:
+        tags = {
+        "customer_name": customer_name,
+        "potion_sku": potion_sku,
+        "search_page": str(int(search_page) - 1),
+        "sort_col": sort_col,
+        "sort_order": sort_order
+        }
+        previous = "/carts/search/"
+
+    if int(search_page) > 1:
+        tags = {
+        "customer_name": customer_name,
+        "potion_sku": potion_sku,
+        "search_page": str(int(search_page) + 1),
+        "sort_col": sort_col,
+        "sort_order": sort_order
+        }
+        print("previous")
 
     
     for n in return_list:
         print(n)
 
     return {
-        "previous": "",
-        "next": next_list,
+        "previous": previous,
+        "next": next,
         "results": return_list
     }
 
