@@ -82,7 +82,7 @@ def search_orders(
     if search_page == "":
         page = 1
     else:
-        page = int(search_page)
+        page = int(search_page[len(search_page) - 1])
     print(page)
     
     return_list = []
