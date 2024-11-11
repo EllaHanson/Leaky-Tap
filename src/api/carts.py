@@ -65,15 +65,15 @@ def search_orders(
         if customer_name or potion_sku:
             search += " WHERE "
         if customer_name:
-            search += "customers.name = '"
+            search += "customers.name LIKE '%"
             search += customer_name
-            search += "'"
+            search += "%'"
             if potion_sku:
                 search += " and "
         if potion_sku:
-            search += "sku = '"
+            search += "sku LIKE '%"
             search += potion_sku
-            search += "'"
+            search += "%'"
         search += " ORDER BY created_at"
 
         result_orders = connection.execute(sqlalchemy.text(search)).fetchall()
@@ -109,12 +109,12 @@ def search_orders(
     if potion_sku:
         tags["potion_sku"] = potion_sku
 
-    if len(result_orders) > line_id:
+    if len(result_orders) > line_id - 1:
         tags["search_page"] = str(page + 1)
         next = f"https://leaky-tap.onrender.com/carts/search/?{urlencode(tags)}"
         print(next)
 
-    if int(page) > 1:
+    if page > 1:
         tags["search_page"] = str(page - 1)
         previous = f"https://leaky-tap.onrender.com/carts/search/?{urlencode(tags)}"
         print(previous)
