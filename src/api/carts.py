@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from src.api import auth
 from enum import Enum
 from datetime import datetime
+from urllib.parse import urlencode
+
 
 #added for version 1
 import sqlalchemy
@@ -100,7 +102,7 @@ def search_orders(
         "sort_col": sort_col,
         "sort_order": sort_order
         }
-        previous = "/carts/search/"
+        #next = f"https://leaky-tap.onrender.com/carts/search/?{urlencode(tags)}"
 
     if int(search_page) > 1:
         tags = {
