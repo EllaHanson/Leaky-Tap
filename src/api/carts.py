@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from src.api import auth
 from enum import Enum
+from datetime import datetime
 
 #added for version 1
 import sqlalchemy
@@ -58,18 +59,21 @@ def search_orders(
     """
 
     with db.engine.begin() as connection:
-        result_orders = connection.execute(sqlalchemy.text("SELECT customers.name AS name, potion_option_id, amount, sku FROM cart_log JOIN customers ON cart_log.customer_id = customers.customer_id JOIN cart_entry ON cart_entry.cart_id = cart_log.cart_id JOIN potion_option ON potion_option.id = cart_entry.potion_option_id")).fetchall()
+        result_orders = connection.execute(sqlalchemy.text("SELECT customers.name AS name, potion_option_id, amount, price, sku, created_at FROM cart_log JOIN customers ON cart_log.customer_id = customers.customer_id JOIN cart_entry ON cart_entry.cart_id = cart_log.cart_id JOIN potion_option ON potion_option.id = cart_entry.potion_option_id")).fetchall()
 
+    for n in result_orders:
+        print(n)
 
     return_list = []
     line_id = 1
     while len(return_list) < 5:
+        time = datetime.fromisoformat(str(result_orders[line_id-1].created_at))
         return_list.append({
             "line_item_id": line_id,
             "item_sku": result_orders[line_id-1].sku,
             "customer_name": result_orders[line_id-1].name,
-            "line_item_total": result_orders[line_id-1].amount,
-            "timestamp": "2021-01-01T00:00:00Z",
+            "line_item_total": result_orders[line_id-1].amount * result_orders[line_id-1].price,
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
         })
         line_id += 1
     
