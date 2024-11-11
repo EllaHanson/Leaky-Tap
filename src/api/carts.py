@@ -57,6 +57,32 @@ def search_orders(
     time is 5 total line items.
     """
 
+    with db.engine.begin() as connection:
+        result_orders = connection.execute(sqlalchemy.text("SELECT customers.name AS name, potion_option_id, amount, sku FROM cart_log JOIN customers ON cart_log.customer_id = customers.customer_id JOIN cart_entry ON cart_entry.cart_id = cart_log.cart_id JOIN potion_option ON potion_option.id = cart_entry.potion_option_id")).fetchall()
+
+
+    return_list = []
+    line_id = 1
+    while len(return_list) < 5:
+        return_list.append({
+            "line_item_id": line_id,
+            "item_sku": result_orders[line_id-1].sku,
+            "customer_name": result_orders[line_id-1].name,
+            "line_item_total": result_orders[line_id-1].amount,
+            "timestamp": "2021-01-01T00:00:00Z",
+        })
+        line_id += 1
+    
+    for n in return_list:
+        print(n)
+
+    return {
+        "previous": "",
+        "next": "",
+        "results": return_list
+    }
+    
+"""
     return {
         "previous": "",
         "next": "",
@@ -70,7 +96,7 @@ def search_orders(
             }
         ],
     }
-
+"""
 
 class Customer(BaseModel):
     customer_name: str
