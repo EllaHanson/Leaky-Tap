@@ -79,10 +79,10 @@ def search_orders(
         result_orders = connection.execute(sqlalchemy.text(search)).fetchall()
     
     print("search page: ", search_page)
-    if search_page:
-        page = int(search_page)
-    else:
+    if search_page == "":
         page = 1
+    else:
+        page = int(search_page)
     print(page)
     
     return_list = []
