@@ -78,7 +78,7 @@ def search_orders(
 
         result_orders = connection.execute(sqlalchemy.text(search)).fetchall()
     
-    print(search_page)
+    print("search page: ", search_page)
     if search_page:
         page = int(search_page)
     else:
