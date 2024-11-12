@@ -74,12 +74,12 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         print(n)
 
     with db.engine.begin() as connection:
-        result_ml_amount = connection.execute(sqlalchemy.text("SELECT SUM(red_diff) AS total_red, SUM(green_diff) AS total_green, SUM(blue_diff) AS total_blue FROM ml")).fetchone()     
+        result_ml_amount = connection.execute(sqlalchemy.text("SELECT COALESCE(SUM(red_diff),0) AS total_red, COALESCE(SUM(green_diff),0) AS total_green, COALESCE(SUM(blue_diff),0) AS total_blue FROM ml")).fetchone()     
         red_ml = result_ml_amount.total_red
         green_ml = result_ml_amount.total_green
         blue_ml = result_ml_amount.total_blue
         total_ml = red_ml + green_ml + blue_ml
-        gold = connection.execute(sqlalchemy.text("SELECT sum(gold_diff) FROM gold")).fetchone()[0]
+        gold = connection.execute(sqlalchemy.text("SELECT COALESCE(sum(gold_diff),0) FROM gold")).fetchone()[0]
         return_list = [] 
 
         print (total_ml)
