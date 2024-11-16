@@ -41,14 +41,16 @@ def get_capacity_plan():
         potion_count = connection.execute(sqlalchemy.text("SELECT COALESCE(SUM(amount), 0) as amount FROM potion_log")).fetchone()[0]
         ml = connection.execute(sqlalchemy.text("SELECT COALESCE(SUM(red_diff), 0) AS red, COALESCE(SUM(green_diff), 0) AS green, COALESCE(SUM(blue_diff), 0) AS blue, COALESCE(SUM(dark_diff), 0) AS dark FROM ml")).fetchone()     
         gold = connection.execute(sqlalchemy.text("SELECT sum(gold_diff) FROM gold")).fetchone()[0]
+        curr_potion_cap = connection.execute(sqlalchemy.text("SELECT sum(amount) AS num FROM capacity WHERE type = 'potion'  GROUP BY type")).fetchone().num + 25
+        curr_ml_cap = connection.execute(sqlalchemy.text("SELECT sum(amount) AS num FROM capacity WHERE type = 'ml' GROUP BY type")).fetchone().num + 5000
         ml_count = ml.red + ml.green + ml.blue + ml.dark
 
         potion_capacity = 0
         ml_capacity = 0
 
-        if potion_count > 25 and gold > 1000:
+        if potion_count > curr_potion_cap and gold > 1000:
             potion_capacity = 1
-        if ml_count > 50000 and gold > 1000:
+        if ml_count > curr_ml_cap and gold > 1000:
             ml_capacity = 1
 
     return {

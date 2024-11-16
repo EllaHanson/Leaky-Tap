@@ -74,11 +74,16 @@ def get_bottle_plan():
         result_potion_options = connection.execute(sqlalchemy.text("SELECT * FROM potion_option ORDER BY id")).fetchall()
         result_ml_amount = connection.execute(sqlalchemy.text("SELECT COALESCE(SUM(red_diff), 0) AS red, COALESCE(SUM(green_diff), 0) AS green, COALESCE(SUM(blue_diff), 0) AS blue, COALESCE(SUM(dark_diff), 0) AS dark FROM ml")).fetchone()     
         potion_amount = connection.execute(sqlalchemy.text("SELECT potion_id, SUM(amount) as amount FROM potion_log GROUP BY potion_id HAVING SUM(amount) > 0")).fetchall()
+        capacity = connection.execute(sqlalchemy.text("SELECT type, COALESCE(sum(amount),0) as num FROM capacity WHERE type = 'potion' GROUP BY type")).fetchone()
+        print(capacity)
 
         available_red = result_ml_amount.red
         available_green = result_ml_amount.green
         available_blue = result_ml_amount.blue
         available_dark = result_ml_amount.dark
+
+        potion_cap = capacity.num + 50
+        num_per_type = potion_cap/5
         
         total_potion_num = 0
         for n in potion_amount:
@@ -108,7 +113,7 @@ def get_bottle_plan():
                     potion_num = x.amount
                     break
 
-            while (potion_num + count < 10) and (total_made_potions + total_potion_num + count < 50) and (available_red >= required_red) and (available_green >= required_green) and (available_blue >= required_blue) and (available_dark >= required_dark):
+            while (potion_num + count < num_per_type) and (total_made_potions + total_potion_num + count < potion_cap) and (available_red >= required_red) and (available_green >= required_green) and (available_blue >= required_blue) and (available_dark >= required_dark):
                 available_red -= required_red
                 available_green -= required_green
                 available_blue -= required_blue

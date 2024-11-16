@@ -80,6 +80,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         blue_ml = result_ml_amount.total_blue
         total_ml = red_ml + green_ml + blue_ml
         gold = connection.execute(sqlalchemy.text("SELECT COALESCE(sum(gold_diff),0) FROM gold")).fetchone()[0]
+        capacity = connection.execute(sqlalchemy.text("SELECT type, COALESCE(sum(amount),0) as num FROM capacity WHERE type = 'ml' GROUP BY type")).fetchone()
+        ml_cap = capacity.num + 10000
+
         return_list = [] 
 
         print (total_ml)
@@ -103,7 +106,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         blue_count = 0
         total_bought = 0
 
-        while ((gold >= 100 and (red_stock or green_stock)) or (gold >= 120 and blue_stock)) and (total_ml + total_bought + 1500 < 10000):
+        while ((gold >= 100 and (red_stock or green_stock)) or (gold >= 120 and blue_stock)) and (total_ml + total_bought + 1500 < ml_cap):
             if (red_stock) and (gold >= 100):
                 red_count += 1
                 red_stock -= 1             
