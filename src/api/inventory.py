@@ -48,13 +48,12 @@ def get_capacity_plan():
         potion_capacity = 0
         ml_capacity = 0
 
-        while potion_capacity < 5 or ml_capacity < 5:
-            if gold > 1000:
-                potion_capacity += 1
-                gold -= 1000
-            if gold > 1000:
-                ml_capacity += 1
-                gold -= 1000
+        if gold > 1000:
+            potion_capacity += 1
+            gold -= 1000
+        if gold > 1000:
+            ml_capacity += 1
+            gold -= 1000
 
     return {
         "potion_capacity": potion_capacity,
